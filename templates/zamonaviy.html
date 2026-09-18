@@ -1,0 +1,302 @@
+<!DOCTYPE html>
+<html lang="uz">
+<head>
+  <meta charset="UTF-8">
+  <title>Sertifikat — {{SERIES}} № {{CERT_NO}}</title>
+  <style>
+    @page {
+      size: A4 portrait;
+      margin: 0;
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+      -webkit-print-color-adjust: exact !important;
+      print-color-adjust: exact !important;
+    }
+
+    body {
+      width: 210mm;
+      height: 297mm;
+      margin: 0;
+      padding: 0;
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+      background: #ffffff;
+      color: #0f172a;
+      display: flex;
+      position: relative;
+    }
+
+    /* Left accent stripe */
+    .accent-bar {
+      width: 14mm;
+      height: 100%;
+      background: linear-gradient(180deg, {{ACCENT}} 0%, #0f172a 100%);
+      position: relative;
+      flex-shrink: 0;
+    }
+
+    .accent-bar::after {
+      content: '';
+      position: absolute;
+      right: 0;
+      top: 0;
+      bottom: 0;
+      width: 2mm;
+      background: rgba(255, 255, 255, 0.3);
+    }
+
+    /* Main content container */
+    .content-container {
+      flex: 1;
+      height: 100%;
+      padding: 18mm 20mm 16mm 18mm;
+      display: flex;
+      flex-direction: column;
+      position: relative;
+      background: #ffffff;
+      background-image: radial-gradient(#e2e8f0 1px, transparent 1px);
+      background-size: 16px 16px;
+    }
+
+    .top-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 8mm;
+      padding-bottom: 5mm;
+      border-bottom: 1.5px solid #e2e8f0;
+    }
+
+    .org-info {
+      text-align: left;
+      max-width: 120mm;
+    }
+
+    .org-title-1 {
+      font-size: 10.5pt;
+      font-weight: 800;
+      color: {{ACCENT}};
+      letter-spacing: 0.5px;
+      text-transform: uppercase;
+      line-height: 1.3;
+    }
+
+    .org-title-2 {
+      font-size: 9pt;
+      font-weight: 600;
+      color: #475569;
+      margin-top: 1.5mm;
+      line-height: 1.35;
+    }
+
+    .cert-logo img {
+      width: 72px;
+      height: 72px;
+      object-fit: contain;
+    }
+
+    .badge-wrap {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      padding: 4px 12px;
+      background: rgba(15, 23, 42, 0.05);
+      border-radius: 9999px;
+      font-size: 9pt;
+      font-weight: 700;
+      color: {{ACCENT}};
+      text-transform: uppercase;
+      letter-spacing: 1.5px;
+      margin-bottom: 3mm;
+    }
+
+    .cert-title-huge {
+      font-size: 36pt;
+      font-weight: 900;
+      color: #0f172a;
+      letter-spacing: -0.5px;
+      line-height: 1.1;
+      margin-bottom: 2mm;
+    }
+
+    .serial-row {
+      font-size: 12pt;
+      font-weight: 600;
+      color: #64748b;
+      letter-spacing: 1px;
+      margin-bottom: 8mm;
+    }
+
+    .serial-row strong {
+      color: {{ACCENT}};
+    }
+
+    .awarded-to-text {
+      font-size: 10.5pt;
+      font-weight: 500;
+      color: #64748b;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+      margin-bottom: 2mm;
+    }
+
+    .fio-box {
+      font-size: 22pt;
+      font-weight: 800;
+      color: #0f172a;
+      line-height: 1.25;
+      margin-bottom: 6mm;
+      position: relative;
+      display: inline-block;
+    }
+
+    .fio-box::after {
+      content: '';
+      display: block;
+      width: 60mm;
+      height: 4px;
+      background: {{ACCENT}};
+      border-radius: 2px;
+      margin-top: 2mm;
+    }
+
+    .body-box {
+      font-size: 12pt;
+      line-height: 1.7;
+      color: #334155;
+      margin-bottom: 5mm;
+      text-align: justify;
+    }
+
+    .cert-score {
+      display: inline-block;
+      font-size: 11pt;
+      font-weight: 600;
+      color: #0f172a;
+      background: #f8fafc;
+      border: 1px solid #e2e8f0;
+      border-left: 4px solid {{ACCENT}};
+      border-radius: 6px;
+      padding: 8px 14px;
+      margin-bottom: 6mm;
+    }
+
+    .cert-score strong {
+      color: {{ACCENT}};
+    }
+
+    .footer-section {
+      margin-top: auto;
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-end;
+      padding-top: 6mm;
+      border-top: 1.5px solid #e2e8f0;
+    }
+
+    .footer-qr-block {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+
+    .qr-img {
+      width: 24mm;
+      height: 24mm;
+      border-radius: 8px;
+      border: 1px solid #cbd5e1;
+      padding: 2px;
+      background: #ffffff;
+    }
+
+    .qr-text {
+      font-size: 8pt;
+      color: #64748b;
+      line-height: 1.4;
+    }
+
+    .qr-text strong {
+      color: #0f172a;
+      font-family: monospace;
+      font-size: 9pt;
+    }
+
+    .footer-sign-block {
+      text-align: right;
+    }
+
+    .director-role {
+      font-size: 9pt;
+      color: #64748b;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      margin-bottom: 1mm;
+    }
+
+    .director-name {
+      font-size: 13pt;
+      font-weight: 800;
+      color: #0f172a;
+      margin-bottom: 2mm;
+    }
+
+    .meta-details {
+      font-size: 9pt;
+      color: #64748b;
+      line-height: 1.4;
+    }
+  </style>
+</head>
+<body>
+  <div class="accent-bar"></div>
+
+  <div class="content-container">
+    <div class="top-header">
+      <div class="org-info">
+        <div class="org-title-1">{{ORG1}}</div>
+        <div class="org-title-2">{{ORG2}}</div>
+      </div>
+      {{LOGO_BLOCK}}
+    </div>
+
+    <div>
+      <div class="badge-wrap">
+        <span>✓</span> Rasmiy Hujjat
+      </div>
+      <div class="cert-title-huge">MALAKA SERTIFIKATI</div>
+      <div class="serial-row">QAYD SERIYASI: <strong>{{SERIES}} № {{CERT_NO}}</strong></div>
+    </div>
+
+    <div class="awarded-to-text">Muvaffaqiyatli topshirgan tinglovchi:</div>
+    <div class="fio-box">{{FIO}}</div>
+
+    <div class="body-box">
+      {{BODY}}
+    </div>
+
+    {{SCORE_BLOCK}}
+
+    <div class="footer-section">
+      <div class="footer-qr-block">
+        <img src="{{QR}}" class="qr-img" alt="QR Kod">
+        <div class="qr-text">
+          Onlayn tekshirish uchun skanerlang<br>
+          Hujjat kodi: <strong>{{UID}}</strong>
+        </div>
+      </div>
+
+      <div class="footer-sign-block">
+        <div class="director-role">Muassasa rahbari</div>
+        <div class="director-name">{{DIRECTOR}}</div>
+        <div class="meta-details">
+          Qayd raqami: <strong>№ {{REG_NO}}</strong><br>
+          Berilgan sana: <strong>{{DATE}}</strong>
+        </div>
+      </div>
+    </div>
+  </div>
+</body>
+</html>

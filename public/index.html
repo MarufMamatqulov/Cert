@@ -1,0 +1,715 @@
+<!DOCTYPE html>
+<html lang="uz">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Sertifikatlarni tekshirish va yuklab olish tizimi</title>
+  <meta name="description" content="Jismoniy shaxsning shaxsiy identifikatsion raqami (PINFL/JSHSHIR) orqali sertifikatni qidirish va rasmiy PDF nusxasini yuklab olish.">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --primary: #1e3a8a;
+      --primary-hover: #1d4ed8;
+      --accent: #2563eb;
+      --bg: #f8fafc;
+      --card-bg: #ffffff;
+      --text: #0f172a;
+      --text-muted: #64748b;
+      --border: #e2e8f0;
+      --success: #16a34a;
+      --danger: #dc2626;
+      --shadow-sm: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
+      --shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.07), 0 8px 10px -6px rgba(0, 0, 0, 0.04);
+      --shadow-lg: 0 20px 25px -5px rgba(30, 58, 138, 0.12), 0 8px 10px -6px rgba(30, 58, 138, 0.08);
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    body {
+      font-family: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+      background-color: var(--bg);
+      color: var(--text);
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      line-height: 1.5;
+      background-image: 
+        radial-gradient(at 100% 0%, rgba(30, 58, 138, 0.06) 0px, transparent 50%),
+        radial-gradient(at 0% 100%, rgba(37, 99, 235, 0.05) 0px, transparent 50%);
+      background-attachment: fixed;
+    }
+
+    /* Navbar */
+    .header-nav {
+      background: rgba(255, 255, 255, 0.85);
+      backdrop-filter: blur(12px);
+      -webkit-backdrop-filter: blur(12px);
+      border-bottom: 1px solid var(--border);
+      position: sticky;
+      top: 0;
+      z-index: 50;
+    }
+
+    .nav-container {
+      max-width: 1100px;
+      margin: 0 auto;
+      padding: 14px 20px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    .brand-wrap {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      text-decoration: none;
+      color: inherit;
+    }
+
+    .brand-logo-circle {
+      width: 42px;
+      height: 42px;
+      border-radius: 10px;
+      background: linear-gradient(135deg, #1e3a8a 0%, #2563eb 100%);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: white;
+      font-weight: 800;
+      font-size: 18px;
+      box-shadow: 0 4px 10px rgba(30, 58, 138, 0.2);
+    }
+
+    .brand-text h1 {
+      font-size: 16px;
+      font-weight: 800;
+      color: var(--primary);
+      letter-spacing: -0.2px;
+      line-height: 1.2;
+    }
+
+    .brand-text span {
+      font-size: 11.5px;
+      color: var(--text-muted);
+      font-weight: 500;
+    }
+
+    .admin-link {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      padding: 8px 14px;
+      border-radius: 8px;
+      font-size: 13px;
+      font-weight: 600;
+      color: var(--text-muted);
+      text-decoration: none;
+      transition: all 0.2s ease;
+      border: 1px solid var(--border);
+      background: white;
+    }
+
+    .admin-link:hover {
+      color: var(--primary);
+      border-color: var(--primary);
+      background: #f8fafc;
+    }
+
+    /* Hero & Search Card */
+    .hero-section {
+      max-width: 760px;
+      margin: 40px auto 30px auto;
+      padding: 0 20px;
+      text-align: center;
+    }
+
+    .hero-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      padding: 5px 14px;
+      background: rgba(30, 58, 138, 0.08);
+      border: 1px solid rgba(30, 58, 138, 0.15);
+      border-radius: 9999px;
+      font-size: 12.5px;
+      font-weight: 700;
+      color: var(--primary);
+      margin-bottom: 16px;
+    }
+
+    .hero-title {
+      font-size: 32px;
+      font-weight: 800;
+      color: var(--text);
+      letter-spacing: -0.8px;
+      line-height: 1.25;
+      margin-bottom: 12px;
+    }
+
+    .hero-subtitle {
+      font-size: 16px;
+      color: var(--text-muted);
+      max-width: 580px;
+      margin: 0 auto 30px auto;
+    }
+
+    /* Search Form Card */
+    .search-card {
+      background: var(--card-bg);
+      border: 1px solid var(--border);
+      border-radius: 20px;
+      padding: 32px 28px;
+      box-shadow: var(--shadow-lg);
+      text-align: left;
+      position: relative;
+    }
+
+    .form-group {
+      margin-bottom: 20px;
+    }
+
+    .form-label {
+      display: block;
+      font-size: 13.5px;
+      font-weight: 700;
+      color: var(--text);
+      margin-bottom: 8px;
+    }
+
+    .form-select, .form-input {
+      width: 100%;
+      padding: 14px 16px;
+      font-size: 15px;
+      font-family: inherit;
+      border: 1.5px solid var(--border);
+      border-radius: 12px;
+      background: #f8fafc;
+      color: var(--text);
+      outline: none;
+      transition: all 0.2s ease;
+    }
+
+    .form-select:focus, .form-input:focus {
+      background: #ffffff;
+      border-color: var(--accent);
+      box-shadow: 0 0 0 4px rgba(37, 99, 235, 0.12);
+    }
+
+    .pinfl-input-wrap {
+      position: relative;
+    }
+
+    .pinfl-input {
+      letter-spacing: 1.5px;
+      font-weight: 600;
+      font-size: 17px;
+    }
+
+    .pinfl-helper {
+      display: flex;
+      justify-content: space-between;
+      margin-top: 6px;
+      font-size: 12px;
+      color: var(--text-muted);
+    }
+
+    .btn-search {
+      width: 100%;
+      padding: 16px 24px;
+      font-size: 16px;
+      font-weight: 700;
+      font-family: inherit;
+      color: white;
+      background: linear-gradient(135deg, #1e3a8a 0%, #2563eb 100%);
+      border: none;
+      border-radius: 12px;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 10px;
+      box-shadow: 0 4px 14px rgba(30, 58, 138, 0.3);
+      transition: all 0.2s ease;
+    }
+
+    .btn-search:hover {
+      background: linear-gradient(135deg, #1d4ed8 0%, #1e40af 100%);
+      transform: translateY(-1px);
+      box-shadow: 0 6px 20px rgba(30, 58, 138, 0.4);
+    }
+
+    .btn-search:active {
+      transform: translateY(0);
+    }
+
+    .btn-search:disabled {
+      opacity: 0.65;
+      cursor: not-allowed;
+      transform: none;
+    }
+
+    /* Results Area */
+    .results-section {
+      max-width: 760px;
+      margin: 24px auto 60px auto;
+      padding: 0 20px;
+    }
+
+    .result-alert {
+      padding: 16px 20px;
+      border-radius: 12px;
+      font-size: 14.5px;
+      margin-bottom: 20px;
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+
+    .result-alert.error {
+      background: #fef2f2;
+      border: 1px solid #fecaca;
+      color: #b91c1c;
+    }
+
+    .result-alert.info {
+      background: #f0f9ff;
+      border: 1px solid #bae6fd;
+      color: #0369a1;
+    }
+
+    .cert-item-card {
+      background: white;
+      border: 1px solid var(--border);
+      border-radius: 16px;
+      padding: 24px;
+      margin-bottom: 16px;
+      box-shadow: var(--shadow);
+      display: flex;
+      flex-direction: column;
+      gap: 16px;
+      transition: all 0.2s ease;
+      border-left: 6px solid var(--accent);
+    }
+
+    .cert-item-card:hover {
+      box-shadow: var(--shadow-lg);
+      transform: translateY(-2px);
+    }
+
+    .cert-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-start;
+      gap: 12px;
+    }
+
+    .cert-series-tag {
+      display: inline-block;
+      padding: 4px 10px;
+      background: #eff6ff;
+      border: 1px solid #bfdbfe;
+      border-radius: 6px;
+      font-size: 12px;
+      font-weight: 700;
+      color: var(--primary);
+    }
+
+    .cert-title-text {
+      font-size: 18px;
+      font-weight: 800;
+      color: var(--text);
+      line-height: 1.35;
+      margin-top: 4px;
+    }
+
+    .cert-meta-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+      gap: 12px;
+      background: #f8fafc;
+      padding: 14px 16px;
+      border-radius: 10px;
+      border: 1px solid #edf2f7;
+    }
+
+    .meta-item-label {
+      font-size: 11px;
+      text-transform: uppercase;
+      letter-spacing: 0.6px;
+      color: var(--text-muted);
+      font-weight: 600;
+    }
+
+    .meta-item-value {
+      font-size: 14px;
+      font-weight: 700;
+      color: var(--text);
+      margin-top: 2px;
+    }
+
+    .cert-actions {
+      display: flex;
+      gap: 12px;
+      flex-wrap: wrap;
+    }
+
+    .btn-action-download {
+      flex: 1;
+      min-width: 200px;
+      padding: 12px 18px;
+      background: var(--primary);
+      color: white;
+      text-decoration: none;
+      border-radius: 10px;
+      font-size: 14.5px;
+      font-weight: 700;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      transition: background 0.2s ease;
+    }
+
+    .btn-action-download:hover {
+      background: var(--primary-hover);
+    }
+
+    .btn-action-verify {
+      padding: 12px 18px;
+      background: #f1f5f9;
+      color: var(--text);
+      text-decoration: none;
+      border-radius: 10px;
+      font-size: 14px;
+      font-weight: 600;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 6px;
+      transition: all 0.2s ease;
+    }
+
+    .btn-action-verify:hover {
+      background: #e2e8f0;
+    }
+
+    /* Footer */
+    .page-footer {
+      margin-top: auto;
+      background: white;
+      border-top: 1px solid var(--border);
+      padding: 24px 20px;
+      text-align: center;
+      font-size: 13px;
+      color: var(--text-muted);
+    }
+
+    /* Spinner */
+    .spinner {
+      width: 18px;
+      height: 18px;
+      border: 2.5px solid rgba(255, 255, 255, 0.3);
+      border-radius: 50%;
+      border-top-color: white;
+      animation: spin 0.7s linear infinite;
+    }
+
+    @keyframes spin {
+      to { transform: rotate(360deg); }
+    }
+
+    @media (max-width: 640px) {
+      .hero-title {
+        font-size: 24px;
+      }
+      .search-card {
+        padding: 24px 18px;
+      }
+      .cert-meta-grid {
+        grid-template-columns: 1fr;
+      }
+    }
+  </style>
+</head>
+<body>
+
+  <!-- Top Navbar -->
+  <header class="header-nav">
+    <div class="nav-container">
+      <a href="/" class="brand-wrap">
+        <div class="brand-logo-circle">UZ</div>
+        <div class="brand-text">
+          <h1 id="navTitle">Sertifikatlar Reyestri</h1>
+          <span id="navOrg">Davlat namunasi asosidagi rasmiy portal</span>
+        </div>
+      </a>
+      <a href="/admin/login" class="admin-link">
+        <svg width="15" height="15" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 16l-4-4m0 0l4-4m-4 4h14m-5 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h7a3 3 0 013 3v1"/>
+        </svg>
+        Admin panel
+      </a>
+    </div>
+  </header>
+
+  <!-- Hero & Form -->
+  <main>
+    <section class="hero-section">
+      <div class="hero-badge">
+        <svg width="14" height="14" fill="currentColor" viewBox="0 0 20 20">
+          <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"/>
+        </svg>
+        Rasmiy elektron reyestr
+      </div>
+      <h2 class="hero-title">Sertifikatni PINFL (JSHSHIR) orqali tekshirish va yuklab olish</h2>
+      <p class="hero-subtitle">
+        O‘zbekiston Respublikasi fuqarolik pasporti yoki ID-kartasidagi 14 xonali JSHSHIR raqamingizni kiriting va sertifikatingizni darhol PDF formatda yuklab oling.
+      </p>
+
+      <div class="search-card">
+        <form id="searchForm">
+          <div class="form-group">
+            <label class="form-label" for="courseSelect">Sertifikat turi (Kurs):</label>
+            <select id="courseSelect" class="form-select">
+              <option value="all">Barcha sertifikat turlari</option>
+            </select>
+          </div>
+
+          <div class="form-group">
+            <label class="form-label" for="pinflInput">Jismoniy shaxsning shaxsiy identifikatsion raqami (PINFL / JSHSHIR):</label>
+            <div class="pinfl-input-wrap">
+              <input 
+                type="text" 
+                id="pinflInput" 
+                class="form-input pinfl-input" 
+                placeholder="14 ta raqamni kiriting..." 
+                maxlength="14" 
+                autocomplete="off"
+                required
+              >
+            </div>
+            <div class="pinfl-helper">
+              <span>Faqat 14 ta raqam</span>
+              <span id="pinflCounter">0 / 14</span>
+            </div>
+          </div>
+
+          <button type="submit" id="btnSubmit" class="btn-search">
+            <svg width="18" height="18" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/>
+            </svg>
+            <span id="btnText">Izlash</span>
+          </button>
+        </form>
+      </div>
+    </section>
+
+    <!-- Results Section -->
+    <section id="resultsSection" class="results-section" style="display: none;"></section>
+  </main>
+
+  <footer class="page-footer">
+    <div id="footerOrg">Kadrlar malakasini oshirish va qayta tayyorlash milliy markazi</div>
+    <div style="margin-top: 4px;">© 2026 Barcha huquqlar himoyalangan. Tizim davlat talablariga muvofiq ishlaydi.</div>
+  </footer>
+
+  <script>
+    const courseSelect = document.getElementById('courseSelect');
+    const pinflInput = document.getElementById('pinflInput');
+    const pinflCounter = document.getElementById('pinflCounter');
+    const searchForm = document.getElementById('searchForm');
+    const btnSubmit = document.getElementById('btnSubmit');
+    const btnText = document.getElementById('btnText');
+    const resultsSection = document.getElementById('resultsSection');
+    const navTitle = document.getElementById('navTitle');
+    const navOrg = document.getElementById('navOrg');
+    const footerOrg = document.getElementById('footerOrg');
+
+    // Fetch site config & active courses
+    async function loadConfig() {
+      try {
+        const res = await fetch('/api/config');
+        if (res.ok) {
+          const data = await res.json();
+          if (data.title) navTitle.textContent = data.title;
+          if (data.org) {
+            navOrg.textContent = data.org;
+            footerOrg.textContent = data.org;
+          }
+          if (Array.isArray(data.courses)) {
+            data.courses.forEach(c => {
+              const opt = document.createElement('option');
+              opt.value = c.code;
+              opt.textContent = `${c.title} (${c.series})`;
+              courseSelect.appendChild(opt);
+            });
+          }
+        }
+      } catch (err) {
+        console.warn('Config load error:', err);
+      }
+    }
+    loadConfig();
+
+    // PINFL input restrictions & counter
+    pinflInput.addEventListener('input', (e) => {
+      const clean = e.target.value.replace(/\D/g, '').slice(0, 14);
+      e.target.value = clean;
+      pinflCounter.textContent = `${clean.length} / 14`;
+      if (clean.length === 14) {
+        pinflCounter.style.color = '#16a34a';
+        pinflCounter.style.fontWeight = '700';
+      } else {
+        pinflCounter.style.color = '#64748b';
+        pinflCounter.style.fontWeight = '500';
+      }
+    });
+
+    // Submit handler
+    searchForm.addEventListener('submit', async (e) => {
+      e.preventDefault();
+
+      const pinfl = pinflInput.value.replace(/\D/g, '').trim();
+      const course = courseSelect.value;
+
+      if (pinfl.length !== 14) {
+        showError('JSHSHIR (PINFL) to‘liq 14 ta raqamdan iborat bo‘lishi kerak.');
+        pinflInput.focus();
+        return;
+      }
+
+      setLoading(true);
+      resultsSection.style.display = 'block';
+      resultsSection.innerHTML = '';
+
+      try {
+        const res = await fetch('/api/search', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ pinfl, course })
+        });
+
+        const data = await res.json();
+
+        if (!res.ok) {
+          showError(data.error || 'Qidiruvda xatolik yuz berdi.');
+          return;
+        }
+
+        if (!data.certificates || data.certificates.length === 0) {
+          showNoResults();
+          return;
+        }
+
+        renderCertificates(data.certificates);
+      } catch (err) {
+        showError('Server bilan bog‘lanishda xatolik. Qaytadan urinib ko‘ring.');
+      } finally {
+        setLoading(false);
+      }
+    });
+
+    function setLoading(isLoading) {
+      btnSubmit.disabled = isLoading;
+      if (isLoading) {
+        btnText.innerHTML = '<span class="spinner"></span> Izlanmoqda...';
+      } else {
+        btnText.innerHTML = 'Izlash';
+      }
+    }
+
+    function showError(msg) {
+      resultsSection.style.display = 'block';
+      resultsSection.innerHTML = `
+        <div class="result-alert error">
+          <svg width="20" height="20" fill="currentColor" viewBox="0 0 20 20">
+            <path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7 4a1 1 0 11-2 0 1 1 0 012 0zm-1-9a1 1 0 00-1 1v4a1 1 0 102 0V6a1 1 0 00-1-1z" clip-rule="evenodd"/>
+          </svg>
+          <div><strong>Xatolik:</strong> ${msg}</div>
+        </div>
+      `;
+    }
+
+    function showNoResults() {
+      resultsSection.style.display = 'block';
+      resultsSection.innerHTML = `
+        <div class="result-alert info">
+          <svg width="20" height="20" fill="currentColor" viewBox="0 0 20 20">
+            <path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z" clip-rule="evenodd"/>
+          </svg>
+          <div>
+            <strong>Sertifikat topilmadi:</strong> Ushbu PINFL raqami bo‘yicha tizimda faol sertifikat mavjud emas. Iltimos, raqamni to‘g‘ri kiritganingizni yoki boshqa sertifikat turini tanlab tekshirib ko‘ring.
+          </div>
+        </div>
+      `;
+    }
+
+    function renderCertificates(certs) {
+      let html = `
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px;">
+          <h3 style="font-size: 18px; font-weight: 800; color: #0f172a;">
+            Topilgan sertifikatlar (${certs.length} ta)
+          </h3>
+        </div>
+      `;
+
+      certs.forEach(cert => {
+        html += `
+          <div class="cert-item-card">
+            <div class="cert-header">
+              <div>
+                <span class="cert-series-tag">${cert.series} № ${cert.cert_no}</span>
+                <div class="cert-title-text">${cert.course_title}</div>
+              </div>
+            </div>
+
+            <div class="cert-meta-grid">
+              <div>
+                <div class="meta-item-label">Tinglovchi</div>
+                <div class="meta-item-value">${cert.fio}</div>
+              </div>
+              <div>
+                <div class="meta-item-label">PINFL</div>
+                <div class="meta-item-value" style="font-family: monospace;">${cert.pinfl}</div>
+              </div>
+              <div>
+                <div class="meta-item-label">Berilgan sana</div>
+                <div class="meta-item-value">${cert.formatted_date}</div>
+              </div>
+              <div>
+                <div class="meta-item-label">Qayd raqami</div>
+                <div class="meta-item-value">№ ${cert.reg_no}</div>
+              </div>
+            </div>
+
+            <div class="cert-actions">
+              <a href="${cert.download_url}" class="btn-action-download" target="_blank">
+                <svg width="18" height="18" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/>
+                </svg>
+                PDF Sertifikatni yuklab olish
+              </a>
+              <a href="/t/${cert.uid}" class="btn-action-verify" target="_blank">
+                <svg width="16" height="16" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/>
+                </svg>
+                Onlayn tekshirish
+              </a>
+            </div>
+          </div>
+        `;
+      });
+
+      resultsSection.innerHTML = html;
+      resultsSection.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    }
+  </script>
+</body>
+</html>

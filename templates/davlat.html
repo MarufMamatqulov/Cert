@@ -1,0 +1,320 @@
+<!DOCTYPE html>
+<html lang="uz">
+<head>
+  <meta charset="UTF-8">
+  <title>Sertifikat — {{SERIES}} № {{CERT_NO}}</title>
+  <style>
+    @page {
+      size: A4 portrait;
+      margin: 0;
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+      -webkit-print-color-adjust: exact !important;
+      print-color-adjust: exact !important;
+    }
+
+    body {
+      width: 210mm;
+      height: 297mm;
+      margin: 0;
+      padding: 12mm;
+      font-family: 'Times New Roman', 'Liberation Serif', 'DejaVu Serif', serif;
+      background: #ffffff;
+      color: #1f2937;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+    }
+
+    .certificate-container {
+      position: relative;
+      width: 100%;
+      height: 100%;
+      border: 3.5mm solid #1e3a8a;
+      padding: 4mm;
+      background: #ffffff;
+      box-shadow: inset 0 0 0 1.5mm #b45309;
+    }
+
+    .inner-border {
+      position: relative;
+      width: 100%;
+      height: 100%;
+      border: 1px dashed #b45309;
+      padding: 8mm 10mm;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      text-align: center;
+      /* Guilloche subtle security pattern */
+      background-color: #fffefb;
+      background-image: 
+        radial-gradient(ellipse at center, rgba(217, 119, 6, 0.04) 0%, rgba(30, 58, 138, 0.05) 100%),
+        repeating-linear-gradient(45deg, transparent, transparent 18px, rgba(30, 58, 138, 0.015) 18px, rgba(30, 58, 138, 0.015) 20px),
+        repeating-linear-gradient(-45deg, transparent, transparent 18px, rgba(180, 83, 9, 0.015) 18px, rgba(180, 83, 9, 0.015) 20px);
+    }
+
+    /* Corner ornate flourishes */
+    .corner {
+      position: absolute;
+      width: 32px;
+      height: 32px;
+      border-color: #b45309;
+      border-style: solid;
+      pointer-events: none;
+    }
+    .corner-tl { top: 6px; left: 6px; border-width: 3px 0 0 3px; }
+    .corner-tr { top: 6px; right: 6px; border-width: 3px 3px 0 0; }
+    .corner-bl { bottom: 6px; left: 6px; border-width: 0 0 3px 3px; }
+    .corner-br { bottom: 6px; right: 6px; border-width: 0 3px 3px 0; }
+
+    .cert-logo {
+      margin-bottom: 3mm;
+    }
+
+    .cert-logo img {
+      width: 78px;
+      height: 78px;
+      object-fit: contain;
+      filter: drop-shadow(0 2px 4px rgba(0,0,0,0.1));
+    }
+
+    .org-title-1 {
+      font-size: 13.5pt;
+      font-weight: 800;
+      color: #1e3a8a;
+      letter-spacing: 0.8px;
+      line-height: 1.35;
+      text-transform: uppercase;
+      max-width: 170mm;
+    }
+
+    .org-title-2 {
+      font-size: 11pt;
+      font-weight: 700;
+      color: #374151;
+      line-height: 1.3;
+      margin-top: 1.5mm;
+      max-width: 165mm;
+      text-transform: uppercase;
+    }
+
+    .divider-line {
+      width: 130mm;
+      height: 2px;
+      background: linear-gradient(90deg, transparent, #b45309, transparent);
+      margin: 4mm 0 3mm 0;
+    }
+
+    .cert-heading-wrap {
+      margin: 2mm 0 1mm 0;
+    }
+
+    .cert-main-heading {
+      font-size: 34pt;
+      font-weight: 900;
+      color: #b91c1c;
+      letter-spacing: 5px;
+      text-shadow: 1px 1px 0px #fff, 2px 2px 2px rgba(185, 28, 28, 0.25);
+      font-family: 'Times New Roman', serif;
+    }
+
+    .cert-serial-number {
+      font-size: 13pt;
+      font-weight: bold;
+      color: #1f2937;
+      letter-spacing: 1.5px;
+      margin-bottom: 4mm;
+    }
+
+    .awarded-to-label {
+      font-size: 11pt;
+      font-style: italic;
+      color: #4b5563;
+      margin-bottom: 2mm;
+    }
+
+    .fio-block {
+      font-size: 20pt;
+      font-weight: 900;
+      color: #111827;
+      letter-spacing: 1px;
+      text-transform: uppercase;
+      border-bottom: 1.5px solid #b45309;
+      padding-bottom: 1.5mm;
+      margin-bottom: 4mm;
+      max-width: 165mm;
+      line-height: 1.25;
+    }
+
+    .cert-body {
+      font-size: 12.5pt;
+      line-height: 1.6;
+      color: #1f2937;
+      text-align: justify;
+      text-justify: inter-word;
+      max-width: 165mm;
+      margin-bottom: 3mm;
+    }
+
+    .cert-score {
+      font-size: 12pt;
+      color: #1e3a8a;
+      background: rgba(30, 58, 138, 0.05);
+      border: 1px solid rgba(30, 58, 138, 0.2);
+      border-radius: 4px;
+      padding: 2mm 6mm;
+      margin-bottom: 4mm;
+      font-style: italic;
+    }
+
+    .cert-footer {
+      margin-top: auto;
+      width: 100%;
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-end;
+      padding-top: 4mm;
+      border-top: 1px solid #e5e7eb;
+    }
+
+    .footer-left {
+      display: flex;
+      align-items: center;
+      gap: 3mm;
+      text-align: left;
+    }
+
+    .qr-img {
+      width: 25mm;
+      height: 25mm;
+      border: 1px solid #d1d5db;
+      padding: 1mm;
+      background: #ffffff;
+      border-radius: 4px;
+    }
+
+    .verify-note {
+      font-size: 8pt;
+      color: #4b5563;
+      line-height: 1.35;
+      max-width: 45mm;
+    }
+
+    .verify-note strong {
+      color: #1f2937;
+    }
+
+    .footer-right {
+      text-align: right;
+      font-size: 11pt;
+      color: #1f2937;
+      line-height: 1.6;
+    }
+
+    .director-title {
+      font-weight: 700;
+      color: #111827;
+    }
+
+    .director-name {
+      font-size: 12pt;
+      font-weight: 800;
+      color: #1e3a8a;
+    }
+
+    .reg-number {
+      font-size: 10pt;
+      color: #4b5563;
+    }
+
+    .issue-date {
+      font-size: 10.5pt;
+      font-weight: 600;
+      color: #374151;
+      margin-top: 1mm;
+    }
+
+    .seal-circle {
+      position: absolute;
+      right: 55mm;
+      bottom: 12mm;
+      width: 28mm;
+      height: 28mm;
+      border: 2px dashed rgba(180, 83, 9, 0.35);
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 7.5pt;
+      color: rgba(180, 83, 9, 0.45);
+      font-weight: bold;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      transform: rotate(-15deg);
+      pointer-events: none;
+    }
+  </style>
+</head>
+<body>
+  <div class="certificate-container">
+    <div class="inner-border">
+      <div class="corner corner-tl"></div>
+      <div class="corner corner-tr"></div>
+      <div class="corner corner-bl"></div>
+      <div class="corner corner-br"></div>
+
+      <!-- State Logo / Coat of Arms -->
+      {{LOGO_BLOCK}}
+
+      <!-- Ministry and Organization -->
+      <div class="org-title-1">{{ORG1}}</div>
+      <div class="org-title-2">{{ORG2}}</div>
+
+      <div class="divider-line"></div>
+
+      <!-- Main Heading -->
+      <div class="cert-heading-wrap">
+        <div class="cert-main-heading">SERTIFIKAT</div>
+      </div>
+
+      <div class="cert-serial-number">{{SERIES}} № {{CERT_NO}}</div>
+
+      <div class="awarded-to-label">Mazkur sertifikat taqdim etiladi:</div>
+      <div class="fio-block">{{FIO}}</div>
+
+      <!-- Body description text -->
+      <div class="cert-body">
+        {{BODY}}
+      </div>
+
+      <!-- Score block if present -->
+      {{SCORE_BLOCK}}
+
+      <!-- Footer with QR and Signatures -->
+      <div class="cert-footer">
+        <div class="footer-left">
+          <img src="{{QR}}" class="qr-img" alt="QR Kod">
+          <div class="verify-note">
+            Haqiqiyligini tekshirish uchun QR kodni skanerlang.<br>
+            <strong>ID: {{UID}}</strong>
+          </div>
+        </div>
+
+        <div class="seal-circle">M.O‘. / MUHR O‘RNI</div>
+
+        <div class="footer-right">
+          <div class="director-title">Muassasa rahbari:</div>
+          <div class="director-name">{{DIRECTOR}}</div>
+          <div class="reg-number">Qayd raqami: <strong>№ {{REG_NO}}</strong></div>
+          <div class="issue-date">Sana: {{DATE}}</div>
+        </div>
+      </div>
+    </div>
+  </div>
+</body>
+</html>

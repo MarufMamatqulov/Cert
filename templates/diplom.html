@@ -1,0 +1,281 @@
+<!DOCTYPE html>
+<html lang="uz">
+<head>
+  <meta charset="UTF-8">
+  <title>Diplom — {{SERIES}} № {{CERT_NO}}</title>
+  <style>
+    @page {
+      size: A4 landscape;
+      margin: 0;
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+      -webkit-print-color-adjust: exact !important;
+      print-color-adjust: exact !important;
+    }
+
+    body {
+      width: 297mm;
+      height: 210mm;
+      margin: 0;
+      padding: 10mm;
+      font-family: 'Times New Roman', 'Liberation Serif', 'DejaVu Serif', serif;
+      background: #faf8f5;
+      color: #1c1917;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+    }
+
+    .diploma-outer {
+      width: 100%;
+      height: 100%;
+      border: 4mm solid #9a3412;
+      box-shadow: inset 0 0 0 2mm #d97706, inset 0 0 0 3mm #fef3c7;
+      padding: 4mm;
+      background: #ffffff;
+      position: relative;
+    }
+
+    .diploma-inner {
+      width: 100%;
+      height: 100%;
+      border: 1.5px solid #d97706;
+      padding: 6mm 14mm 6mm 14mm;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      text-align: center;
+      position: relative;
+      background-color: #fffefb;
+      background-image: 
+        radial-gradient(circle at 50% 50%, rgba(217, 119, 6, 0.03) 0%, transparent 80%),
+        repeating-linear-gradient(45deg, transparent, transparent 25px, rgba(180, 83, 9, 0.015) 25px, rgba(180, 83, 9, 0.015) 27px),
+        repeating-linear-gradient(-45deg, transparent, transparent 25px, rgba(180, 83, 9, 0.015) 25px, rgba(180, 83, 9, 0.015) 27px);
+    }
+
+    /* Ornate Gold Corners */
+    .corner-dec {
+      position: absolute;
+      width: 44px;
+      height: 44px;
+      border: 3px solid #d97706;
+      pointer-events: none;
+    }
+    .corner-tl { top: 6px; left: 6px; border-right: none; border-bottom: none; }
+    .corner-tr { top: 6px; right: 6px; border-left: none; border-bottom: none; }
+    .corner-bl { bottom: 6px; left: 6px; border-right: none; border-top: none; }
+    .corner-br { bottom: 6px; right: 6px; border-left: none; border-top: none; }
+
+    .header-row {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 5mm;
+      margin-bottom: 2mm;
+    }
+
+    .cert-logo img {
+      width: 58px;
+      height: 58px;
+      object-fit: contain;
+    }
+
+    .titles-wrap {
+      text-align: center;
+    }
+
+    .org-title-1 {
+      font-size: 11pt;
+      font-weight: 800;
+      color: #9a3412;
+      letter-spacing: 0.8px;
+      text-transform: uppercase;
+    }
+
+    .org-title-2 {
+      font-size: 9.5pt;
+      font-weight: 700;
+      color: #44403c;
+      margin-top: 1mm;
+      text-transform: uppercase;
+    }
+
+    .title-diploma {
+      font-size: 32pt;
+      font-weight: 900;
+      color: #b45309;
+      letter-spacing: 6px;
+      text-transform: uppercase;
+      margin: 1mm 0 0.5mm 0;
+      text-shadow: 1px 1px 0 #fff, 2px 2px 2px rgba(180, 83, 9, 0.2);
+    }
+
+    .serial-diploma {
+      font-size: 11pt;
+      font-weight: 700;
+      color: #78350f;
+      letter-spacing: 1.5px;
+      margin-bottom: 2mm;
+    }
+
+    .awarded-lead {
+      font-size: 10.5pt;
+      font-style: italic;
+      color: #57534e;
+    }
+
+    .fio-diploma {
+      font-size: 21pt;
+      font-weight: 900;
+      color: #1c1917;
+      letter-spacing: 1px;
+      text-transform: uppercase;
+      padding: 1mm 0;
+      border-bottom: 2px double #d97706;
+      width: 60%;
+      margin: 1mm auto 2.5mm auto;
+    }
+
+    .body-diploma {
+      font-size: 11.5pt;
+      line-height: 1.55;
+      color: #292524;
+      max-width: 220mm;
+      text-align: center;
+      margin-bottom: 2mm;
+    }
+
+    .cert-score {
+      font-size: 10.5pt;
+      font-weight: 600;
+      color: #9a3412;
+      background: rgba(217, 119, 6, 0.08);
+      border: 1px solid rgba(217, 119, 6, 0.25);
+      border-radius: 4px;
+      padding: 1.5mm 6mm;
+      margin-bottom: 2mm;
+    }
+
+    .diploma-footer {
+      margin-top: auto;
+      width: 100%;
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-end;
+      padding-top: 3mm;
+      border-top: 1px solid #e7e5e4;
+    }
+
+    .footer-left {
+      display: flex;
+      align-items: center;
+      gap: 3mm;
+      text-align: left;
+    }
+
+    .qr-img {
+      width: 21mm;
+      height: 21mm;
+      border: 1px solid #d6d3d1;
+      padding: 1mm;
+      background: #ffffff;
+      border-radius: 4px;
+    }
+
+    .qr-caption {
+      font-size: 7.5pt;
+      color: #78716c;
+      line-height: 1.35;
+    }
+
+    .qr-caption strong {
+      color: #1c1917;
+    }
+
+    .footer-center-seal {
+      width: 24mm;
+      height: 24mm;
+      border: 2px dashed rgba(180, 83, 9, 0.35);
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 7pt;
+      color: rgba(180, 83, 9, 0.5);
+      font-weight: bold;
+      transform: rotate(-10deg);
+    }
+
+    .footer-right {
+      text-align: right;
+      font-size: 10.5pt;
+      color: #1c1917;
+      line-height: 1.5;
+    }
+
+    .director-name {
+      font-weight: 800;
+      color: #9a3412;
+    }
+
+    .meta-line {
+      font-size: 9pt;
+      color: #57534e;
+    }
+  </style>
+</head>
+<body>
+  <div class="diploma-outer">
+    <div class="diploma-inner">
+      <div class="corner-dec corner-tl"></div>
+      <div class="corner-dec corner-tr"></div>
+      <div class="corner-dec corner-bl"></div>
+      <div class="corner-dec corner-br"></div>
+
+      <div class="header-row">
+        {{LOGO_BLOCK}}
+        <div class="titles-wrap">
+          <div class="org-title-1">{{ORG1}}</div>
+          <div class="org-title-2">{{ORG2}}</div>
+        </div>
+      </div>
+
+      <div class="title-diploma">DIPLOM</div>
+      <div class="serial-diploma">{{SERIES}} № {{CERT_NO}}</div>
+
+      <div class="awarded-lead">Ushbu diplom taqdim etiladi:</div>
+      <div class="fio-diploma">{{FIO}}</div>
+
+      <div class="body-diploma">
+        {{BODY}}
+      </div>
+
+      {{SCORE_BLOCK}}
+
+      <div class="diploma-footer">
+        <div class="footer-left">
+          <img src="{{QR}}" class="qr-img" alt="QR Kod">
+          <div class="qr-caption">
+            Haqiqiylikni tasdiqlash kodi:<br>
+            <strong>{{UID}}</strong>
+          </div>
+        </div>
+
+        <div class="footer-center-seal">
+          MUHR O‘RNI
+        </div>
+
+        <div class="footer-right">
+          <div>Muassasa rahbari: <span class="director-name">{{DIRECTOR}}</span></div>
+          <div class="meta-line">Qayd raqami: <strong>№ {{REG_NO}}</strong></div>
+          <div class="meta-line">Berilgan sana: <strong>{{DATE}}</strong></div>
+        </div>
+      </div>
+    </div>
+  </div>
+</body>
+</html>

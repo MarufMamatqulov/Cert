@@ -1,0 +1,1983 @@
+<!DOCTYPE html>
+<html lang="uz">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Boshqaruv Paneli — SER Tizim</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --primary: #1e3a8a;
+      --primary-hover: #1d4ed8;
+      --accent: #2563eb;
+      --bg: #f8fafc;
+      --sidebar-bg: #0f172a;
+      --sidebar-text: #94a3b8;
+      --sidebar-active: #ffffff;
+      --card: #ffffff;
+      --text: #0f172a;
+      --text-muted: #64748b;
+      --border: #e2e8f0;
+      --success: #16a34a;
+      --warning: #f59e0b;
+      --danger: #dc2626;
+      --shadow-sm: 0 1px 3px rgba(0,0,0,0.06);
+      --shadow: 0 4px 12px rgba(0,0,0,0.05);
+      --shadow-lg: 0 12px 28px rgba(0,0,0,0.08);
+    }
+
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      font-family: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+      background-color: var(--bg);
+      color: var(--text);
+      display: flex;
+      min-height: 100vh;
+      overflow-x: hidden;
+    }
+
+    /* Sidebar */
+    .sidebar {
+      width: 260px;
+      background: var(--sidebar-bg);
+      color: var(--sidebar-text);
+      display: flex;
+      flex-direction: column;
+      flex-shrink: 0;
+      position: sticky;
+      top: 0;
+      height: 100vh;
+      z-index: 40;
+    }
+
+    .sidebar-brand {
+      padding: 24px 20px;
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+    }
+
+    .brand-icon {
+      width: 38px;
+      height: 38px;
+      border-radius: 10px;
+      background: linear-gradient(135deg, #2563eb 0%, #1e3a8a 100%);
+      color: white;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-weight: 800;
+      font-size: 16px;
+    }
+
+    .brand-title {
+      font-size: 16px;
+      font-weight: 800;
+      color: #ffffff;
+      line-height: 1.2;
+    }
+
+    .brand-sub {
+      font-size: 11px;
+      color: #64748b;
+    }
+
+    .sidebar-menu {
+      padding: 16px 12px;
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
+      overflow-y: auto;
+    }
+
+    .nav-item {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      padding: 12px 16px;
+      border-radius: 10px;
+      font-size: 14px;
+      font-weight: 600;
+      color: var(--sidebar-text);
+      text-decoration: none;
+      cursor: pointer;
+      transition: all 0.2s ease;
+      border: 1px solid transparent;
+    }
+
+    .nav-item:hover {
+      color: #ffffff;
+      background: rgba(255, 255, 255, 0.05);
+    }
+
+    .nav-item.active {
+      color: #ffffff;
+      background: rgba(37, 99, 235, 0.2);
+      border-color: rgba(37, 99, 235, 0.4);
+    }
+
+    .nav-item svg {
+      width: 18px;
+      height: 18px;
+      flex-shrink: 0;
+    }
+
+    .sidebar-footer {
+      padding: 16px;
+      border-top: 1px solid rgba(255, 255, 255, 0.08);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+
+    .admin-info {
+      display: flex;
+      flex-direction: column;
+    }
+
+    .admin-name {
+      font-size: 13px;
+      font-weight: 700;
+      color: #ffffff;
+    }
+
+    .admin-role {
+      font-size: 11px;
+      color: #64748b;
+    }
+
+    .btn-logout {
+      background: transparent;
+      border: none;
+      color: #94a3b8;
+      cursor: pointer;
+      padding: 8px;
+      border-radius: 8px;
+      display: flex;
+      align-items: center;
+      transition: all 0.2s ease;
+    }
+
+    .btn-logout:hover {
+      color: #ef4444;
+      background: rgba(239, 68, 68, 0.1);
+    }
+
+    /* Main Content */
+    .main-wrapper {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      min-width: 0;
+      overflow-y: auto;
+    }
+
+    .top-bar {
+      height: 64px;
+      background: #ffffff;
+      border-bottom: 1px solid var(--border);
+      padding: 0 32px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      position: sticky;
+      top: 0;
+      z-index: 30;
+    }
+
+    .page-title {
+      font-size: 19px;
+      font-weight: 800;
+      color: var(--text);
+    }
+
+    .top-actions {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+
+    .btn-view-site {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      padding: 8px 14px;
+      border-radius: 8px;
+      background: #f1f5f9;
+      color: var(--text);
+      font-size: 13px;
+      font-weight: 600;
+      text-decoration: none;
+      transition: background 0.2s;
+    }
+
+    .btn-view-site:hover {
+      background: #e2e8f0;
+    }
+
+    .content-body {
+      padding: 32px;
+      flex: 1;
+    }
+
+    /* Tab Sections */
+    .tab-section {
+      display: none;
+    }
+    .tab-section.active {
+      display: block;
+    }
+
+    /* Stats Grid */
+    .stats-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+      gap: 20px;
+      margin-bottom: 32px;
+    }
+
+    .stat-card {
+      background: #ffffff;
+      border: 1px solid var(--border);
+      border-radius: 16px;
+      padding: 22px;
+      box-shadow: var(--shadow-sm);
+      display: flex;
+      align-items: center;
+      gap: 18px;
+    }
+
+    .stat-icon-wrap {
+      width: 52px;
+      height: 52px;
+      border-radius: 14px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex-shrink: 0;
+    }
+
+    .stat-icon-wrap.blue { background: #eff6ff; color: #2563eb; }
+    .stat-icon-wrap.green { background: #f0fdf4; color: #16a34a; }
+    .stat-icon-wrap.purple { background: #faf5ff; color: #9333ea; }
+    .stat-icon-wrap.amber { background: #fffbeb; color: #d97706; }
+
+    .stat-info {
+      display: flex;
+      flex-direction: column;
+    }
+
+    .stat-val {
+      font-size: 26px;
+      font-weight: 800;
+      color: var(--text);
+      line-height: 1.1;
+    }
+
+    .stat-label {
+      font-size: 13px;
+      color: var(--text-muted);
+      margin-top: 4px;
+      font-weight: 500;
+    }
+
+    /* Card Panels */
+    .panel-card {
+      background: #ffffff;
+      border: 1px solid var(--border);
+      border-radius: 16px;
+      padding: 24px;
+      box-shadow: var(--shadow-sm);
+      margin-bottom: 24px;
+    }
+
+    .panel-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 20px;
+      flex-wrap: wrap;
+      gap: 12px;
+    }
+
+    .panel-title {
+      font-size: 17px;
+      font-weight: 800;
+      color: var(--text);
+    }
+
+    /* Buttons */
+    .btn {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      padding: 10px 18px;
+      border-radius: 10px;
+      font-size: 14px;
+      font-weight: 700;
+      cursor: pointer;
+      font-family: inherit;
+      border: 1px solid transparent;
+      transition: all 0.2s ease;
+    }
+
+    .btn-primary {
+      background: var(--primary);
+      color: white;
+    }
+    .btn-primary:hover {
+      background: var(--primary-hover);
+    }
+
+    .btn-secondary {
+      background: #f1f5f9;
+      color: var(--text);
+      border-color: var(--border);
+    }
+    .btn-secondary:hover {
+      background: #e2e8f0;
+    }
+
+    .btn-danger {
+      background: #fee2e2;
+      color: #b91c1c;
+    }
+    .btn-danger:hover {
+      background: #fecaca;
+    }
+
+    .btn-sm {
+      padding: 6px 12px;
+      font-size: 12.5px;
+      border-radius: 8px;
+    }
+
+    /* Tables */
+    .table-responsive {
+      overflow-x: auto;
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      text-align: left;
+    }
+
+    th {
+      background: #f8fafc;
+      padding: 12px 16px;
+      font-size: 12px;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.6px;
+      color: var(--text-muted);
+      border-bottom: 1px solid var(--border);
+    }
+
+    td {
+      padding: 14px 16px;
+      font-size: 13.5px;
+      border-bottom: 1px solid var(--border);
+      color: var(--text);
+    }
+
+    tr:hover td {
+      background: #fcfcfd;
+    }
+
+    .status-tag {
+      display: inline-block;
+      padding: 3px 10px;
+      border-radius: 6px;
+      font-size: 11.5px;
+      font-weight: 700;
+    }
+    .status-tag.active {
+      background: #dcfce7;
+      color: #15803d;
+    }
+    .status-tag.revoked {
+      background: #fee2e2;
+      color: #b91c1c;
+    }
+
+    /* Filters Bar */
+    .filters-bar {
+      display: flex;
+      gap: 12px;
+      margin-bottom: 20px;
+      flex-wrap: wrap;
+    }
+
+    .search-box {
+      flex: 1;
+      min-width: 240px;
+      position: relative;
+    }
+
+    .search-input {
+      width: 100%;
+      padding: 10px 14px 10px 38px;
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      font-size: 13.5px;
+      font-family: inherit;
+      outline: none;
+    }
+
+    .search-input:focus {
+      border-color: var(--accent);
+    }
+
+    .search-icon {
+      position: absolute;
+      left: 12px;
+      top: 50%;
+      transform: translateY(-50%);
+      color: var(--text-muted);
+    }
+
+    .filter-select {
+      padding: 10px 14px;
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      font-size: 13.5px;
+      font-family: inherit;
+      background: white;
+      outline: none;
+    }
+
+    /* Pagination */
+    .pagination-bar {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-top: 20px;
+      font-size: 13.5px;
+      color: var(--text-muted);
+    }
+
+    .page-buttons {
+      display: flex;
+      gap: 6px;
+    }
+
+    /* Template Cards Grid */
+    .template-selector-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+      gap: 16px;
+      margin-bottom: 24px;
+    }
+
+    .tpl-card {
+      border: 2px solid var(--border);
+      border-radius: 14px;
+      padding: 16px;
+      cursor: pointer;
+      text-align: center;
+      background: white;
+      transition: all 0.2s ease;
+    }
+
+    .tpl-card:hover {
+      border-color: #93c5fd;
+      transform: translateY(-2px);
+    }
+
+    .tpl-card.selected {
+      border-color: var(--accent);
+      background: #eff6ff;
+      box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.15);
+    }
+
+    .tpl-badge {
+      display: inline-block;
+      font-size: 11px;
+      font-weight: 700;
+      padding: 3px 8px;
+      border-radius: 6px;
+      background: #e2e8f0;
+      color: #334155;
+      margin-top: 6px;
+    }
+
+    .tpl-card.selected .tpl-badge {
+      background: var(--accent);
+      color: white;
+    }
+
+    /* Live Preview Section */
+    .preview-container {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 24px;
+      margin-top: 20px;
+    }
+
+    .preview-frame-wrap {
+      background: #334155;
+      border-radius: 14px;
+      padding: 16px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+    }
+
+    .preview-header-bar {
+      width: 100%;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      color: #e2e8f0;
+      font-size: 12px;
+      margin-bottom: 12px;
+    }
+
+    .preview-iframe {
+      width: 100%;
+      height: 520px;
+      background: white;
+      border: none;
+      border-radius: 8px;
+      box-shadow: 0 10px 25px rgba(0,0,0,0.3);
+    }
+
+    /* Modal dialogs */
+    .modal-backdrop {
+      position: fixed;
+      inset: 0;
+      background: rgba(15, 23, 42, 0.6);
+      backdrop-filter: blur(4px);
+      z-index: 100;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 20px;
+      opacity: 0;
+      pointer-events: none;
+      transition: opacity 0.2s ease;
+    }
+
+    .modal-backdrop.active {
+      opacity: 1;
+      pointer-events: auto;
+    }
+
+    .modal-dialog {
+      background: white;
+      border-radius: 20px;
+      width: 100%;
+      max-width: 640px;
+      max-height: 90vh;
+      overflow-y: auto;
+      box-shadow: var(--shadow-lg);
+      padding: 28px;
+      transform: translateY(20px);
+      transition: transform 0.2s ease;
+    }
+
+    .modal-backdrop.active .modal-dialog {
+      transform: translateY(0);
+    }
+
+    .modal-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 20px;
+      padding-bottom: 12px;
+      border-bottom: 1px solid var(--border);
+    }
+
+    .modal-title {
+      font-size: 18px;
+      font-weight: 800;
+      color: var(--text);
+    }
+
+    .btn-close {
+      background: transparent;
+      border: none;
+      font-size: 22px;
+      cursor: pointer;
+      color: var(--text-muted);
+    }
+
+    .form-grid-2 {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 16px;
+    }
+
+    .form-control-group {
+      margin-bottom: 16px;
+    }
+
+    .form-label {
+      display: block;
+      font-size: 13px;
+      font-weight: 700;
+      color: var(--text);
+      margin-bottom: 6px;
+    }
+
+    .form-input, .form-textarea, .form-select {
+      width: 100%;
+      padding: 10px 14px;
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      font-size: 13.5px;
+      font-family: inherit;
+      outline: none;
+    }
+
+    .form-input:focus, .form-textarea:focus, .form-select:focus {
+      border-color: var(--accent);
+      box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.1);
+    }
+
+    .form-textarea {
+      resize: vertical;
+      min-height: 80px;
+    }
+
+    /* Toast notification */
+    .toast {
+      position: fixed;
+      bottom: 24px;
+      right: 24px;
+      background: #0f172a;
+      color: white;
+      padding: 14px 22px;
+      border-radius: 12px;
+      box-shadow: 0 10px 25px rgba(0,0,0,0.2);
+      font-size: 14px;
+      font-weight: 600;
+      z-index: 200;
+      transform: translateY(100px);
+      opacity: 0;
+      transition: all 0.3s ease;
+    }
+
+    .toast.show {
+      transform: translateY(0);
+      opacity: 1;
+    }
+
+    .toast.success { background: #15803d; }
+    .toast.error { background: #b91c1c; }
+
+    @media (max-width: 900px) {
+      body { flex-direction: column; }
+      .sidebar { width: 100%; height: auto; position: relative; }
+      .preview-container { grid-template-columns: 1fr; }
+      .form-grid-2 { grid-template-columns: 1fr; }
+    }
+  </style>
+</head>
+<body>
+
+  <!-- Sidebar -->
+  <aside class="sidebar">
+    <div class="sidebar-brand">
+      <div class="brand-icon">SER</div>
+      <div>
+        <div class="brand-title">Admin Panel</div>
+        <div class="brand-sub">Sertifikat boshqaruvi</div>
+      </div>
+    </div>
+
+    <nav class="sidebar-menu">
+      <div class="nav-item active" data-tab="dashboard">
+        <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2V6zM14 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2V6zM4 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2v-2zM14 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2v-2z"/></svg>
+        Boshqaruv paneli
+      </div>
+      <div class="nav-item" data-tab="certificates">
+        <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/></svg>
+        Sertifikatlar
+      </div>
+      <div class="nav-item" data-tab="courses">
+        <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10"/></svg>
+        Kurslar va Shablonlar
+      </div>
+      <div class="nav-item" data-tab="import">
+        <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12"/></svg>
+        Excel Import
+      </div>
+      <div class="nav-item" data-tab="settings">
+        <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/></svg>
+        Sozlamalar
+      </div>
+    </nav>
+
+    <div class="sidebar-footer">
+      <div class="admin-info">
+        <span class="admin-name" id="sidebarAdminName">Administrator</span>
+        <span class="admin-role" id="sidebarAdminRole">Superadmin</span>
+      </div>
+      <button class="btn-logout" id="btnLogout" title="Chiqish">
+        <svg width="18" height="18" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1"/></svg>
+      </button>
+    </div>
+  </aside>
+
+  <!-- Main Content Wrapper -->
+  <main class="main-wrapper">
+    <header class="top-bar">
+      <h2 class="page-title" id="pageTitle">Boshqaruv paneli</h2>
+      <div class="top-actions">
+        <a href="/" target="_blank" class="btn-view-site">
+          <svg width="15" height="15" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14"/></svg>
+          Ochiq portalni ko‘rish
+        </a>
+      </div>
+    </header>
+
+    <div class="content-body">
+
+      <!-- 1. DASHBOARD TAB -->
+      <section id="tab-dashboard" class="tab-section active">
+        <div class="stats-grid">
+          <div class="stat-card">
+            <div class="stat-icon-wrap blue">
+              <svg width="24" height="24" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/></svg>
+            </div>
+            <div class="stat-info">
+              <span class="stat-val" id="statTotalCerts">0</span>
+              <span class="stat-label">Jami sertifikatlar</span>
+            </div>
+          </div>
+
+          <div class="stat-card">
+            <div class="stat-icon-wrap green">
+              <svg width="24" height="24" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+            </div>
+            <div class="stat-info">
+              <span class="stat-val" id="statActiveCerts">0</span>
+              <span class="stat-label">Faol sertifikatlar</span>
+            </div>
+          </div>
+
+          <div class="stat-card">
+            <div class="stat-icon-wrap purple">
+              <svg width="24" height="24" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10"/></svg>
+            </div>
+            <div class="stat-info">
+              <span class="stat-val" id="statTotalCourses">0</span>
+              <span class="stat-label">Kurslar soni</span>
+            </div>
+          </div>
+
+          <div class="stat-card">
+            <div class="stat-icon-wrap amber">
+              <svg width="24" height="24" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"/></svg>
+            </div>
+            <div class="stat-info">
+              <span class="stat-val" id="statTotalDownloads">0</span>
+              <span class="stat-label">Yuklab olishlar</span>
+            </div>
+          </div>
+        </div>
+
+        <div class="panel-card">
+          <div class="panel-header">
+            <h3 class="panel-title">Oxirgi berilgan sertifikatlar</h3>
+            <button class="btn btn-secondary btn-sm" onclick="switchTab('certificates')">Barchasini ko‘rish →</button>
+          </div>
+          <div class="table-responsive">
+            <table>
+              <thead>
+                <tr>
+                  <th>Seriya & Raqam</th>
+                  <th>F.I.Sh.</th>
+                  <th>PINFL</th>
+                  <th>Kurs</th>
+                  <th>Sana</th>
+                  <th>Holat</th>
+                  <th>PDF</th>
+                </tr>
+              </thead>
+              <tbody id="recentCertsTbody">
+                <tr><td colspan="7" style="text-align: center; color: #94a3b8;">Yuklanmoqda...</td></tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </section>
+
+      <!-- 2. CERTIFICATES TAB -->
+      <section id="tab-certificates" class="tab-section">
+        <div class="panel-card">
+          <div class="panel-header">
+            <h3 class="panel-title">Barcha sertifikatlar</h3>
+            <button class="btn btn-primary" onclick="openCertModal()">
+              <svg width="16" height="16" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/></svg>
+              + Yangi sertifikat
+            </button>
+          </div>
+
+          <div class="filters-bar">
+            <div class="search-box">
+              <svg class="search-icon" width="16" height="16" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/></svg>
+              <input type="text" id="certSearchQuery" class="search-input" placeholder="F.I.Sh., PINFL yoki raqam bo‘yicha qidiruv...">
+            </div>
+            <select id="certCourseFilter" class="filter-select">
+              <option value="all">Barcha kurslar</option>
+            </select>
+          </div>
+
+          <div class="table-responsive">
+            <table>
+              <thead>
+                <tr>
+                  <th>№</th>
+                  <th>Seriya / Raqam</th>
+                  <th>F.I.Sh.</th>
+                  <th>PINFL</th>
+                  <th>Kurs</th>
+                  <th>Ball</th>
+                  <th>Sana</th>
+                  <th>Holat</th>
+                  <th>Harakatlar</th>
+                </tr>
+              </thead>
+              <tbody id="certsTbody">
+                <tr><td colspan="9" style="text-align: center; color: #94a3b8;">Yuklanmoqda...</td></tr>
+              </tbody>
+            </table>
+          </div>
+
+          <div class="pagination-bar">
+            <div id="certPaginationInfo">0 tadan 0 ko‘rsatilmoqda</div>
+            <div class="page-buttons">
+              <button class="btn btn-secondary btn-sm" id="btnPrevPage" onclick="changeCertPage(-1)">← Oldingi</button>
+              <button class="btn btn-secondary btn-sm" id="btnNextPage" onclick="changeCertPage(1)">Keyingi →</button>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- 3. COURSES & TEMPLATES TAB -->
+      <section id="tab-courses" class="tab-section">
+        <div class="panel-card">
+          <div class="panel-header">
+            <h3 class="panel-title">Mavjud kurslar</h3>
+            <button class="btn btn-primary" onclick="openCourseModal()">
+              <svg width="16" height="16" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/></svg>
+              + Yangi kurs yaratish
+            </button>
+          </div>
+
+          <div class="table-responsive">
+            <table>
+              <thead>
+                <tr>
+                  <th>Kodi</th>
+                  <th>Kurs nomi</th>
+                  <th>Seriya</th>
+                  <th>Shablon</th>
+                  <th>Soat</th>
+                  <th>Sertifikatlar</th>
+                  <th>Holat</th>
+                  <th>Harakatlar</th>
+                </tr>
+              </thead>
+              <tbody id="coursesTbody">
+                <tr><td colspan="8" style="text-align: center; color: #94a3b8;">Yuklanmoqda...</td></tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </section>
+
+      <!-- 4. EXCEL IMPORT TAB -->
+      <section id="tab-import" class="tab-section">
+        <div class="panel-card" style="max-width: 760px; margin: 0 auto;">
+          <div class="panel-header">
+            <h3 class="panel-title">Sertifikatlarni Excel / CSV orqali ommaviy yuklash</h3>
+          </div>
+
+          <form id="importForm">
+            <div class="form-control-group">
+              <label class="form-label" for="importCourse">Sertifikat beriladigan kursni tanlang:</label>
+              <select id="importCourse" class="form-select" required>
+                <option value="">Kursni tanlang...</option>
+              </select>
+            </div>
+
+            <div class="form-control-group">
+              <label class="form-label" for="importDate">Standart berilgan sana (agar faylda ko‘rsatilmagan bo‘lsa):</label>
+              <input type="date" id="importDate" class="form-input">
+            </div>
+
+            <div class="form-control-group">
+              <label class="form-label" for="importFile">Excel (.xlsx) yoki .csv faylni tanlang:</label>
+              <input type="file" id="importFile" class="form-input" accept=".xlsx, .xls, .csv" required>
+            </div>
+
+            <div style="background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 12px; padding: 16px; margin: 20px 0; font-size: 13px; color: #475569; line-height: 1.6;">
+              <strong style="color: #0f172a;">Jadval ustunlari talabi:</strong>
+              <ul style="margin-left: 20px; margin-top: 6px;">
+                <li><code>FIO</code> yoki <code>FISH</code> (Ism-familiya) — <em>majburiy</em></li>
+                <li><code>PINFL</code> yoki <code>JSHSHIR</code> (14 ta raqam) — <em>majburiy</em></li>
+                <li><code>Pasport</code> (AA1234567) — <em>ixtiyoriy</em></li>
+                <li><code>Sertifikat raqami</code> — <em>bo‘sh qoldirilsa avtomatik tartib bilan beriladi</em></li>
+                <li><code>Qayd raqami</code>, <code>Ball</code>, <code>Sana</code> — <em>ixtiyoriy</em></li>
+              </ul>
+            </div>
+
+            <button type="submit" id="btnRunImport" class="btn btn-primary" style="width: 100%; padding: 14px;">
+              Excel ro‘yxatini import qilish
+            </button>
+          </form>
+
+          <div id="importResultBox" style="display: none; margin-top: 24px;"></div>
+        </div>
+      </section>
+
+      <!-- 5. SETTINGS TAB -->
+      <section id="tab-settings" class="tab-section">
+        <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(320px, 1fr)); gap: 24px;">
+          <!-- System settings -->
+          <div class="panel-card">
+            <h3 class="panel-title" style="margin-bottom: 20px;">Tizim asosiy sozlamalari</h3>
+            <form id="settingsForm">
+              <div class="form-control-group">
+                <label class="form-label">Sayt nomi (Title):</label>
+                <input type="text" id="settingSiteTitle" class="form-input" required>
+              </div>
+
+              <div class="form-control-group">
+                <label class="form-label">Tashkilot nomi (Sarlavha):</label>
+                <input type="text" id="settingSiteOrg" class="form-input" required>
+              </div>
+
+              <div class="form-control-group">
+                <label class="form-label">Asosiy portal URL (BASE_URL):</label>
+                <input type="text" id="settingBaseUrl" class="form-input" placeholder="http://localhost:3000" required>
+                <small style="color: #64748b; font-size: 11.5px;">QR kodlar ushbu manzil bo‘yicha tekshirish sahifasini ochadi.</small>
+              </div>
+
+              <button type="submit" class="btn btn-primary" style="margin-top: 10px;">Saqlash</button>
+            </form>
+          </div>
+
+          <!-- Logo & Password -->
+          <div>
+            <div class="panel-card">
+              <h3 class="panel-title" style="margin-bottom: 20px;">Gerb / Logo yuklash</h3>
+              <form id="logoForm">
+                <div class="form-control-group">
+                  <label class="form-label">Yangi logo tanlang (.png, .jpg, .svg):</label>
+                  <input type="file" id="logoFileInput" class="form-input" accept=".png, .jpg, .jpeg, .svg" required>
+                </div>
+                <button type="submit" class="btn btn-secondary">Logoni yuklash</button>
+              </form>
+            </div>
+
+            <div class="panel-card">
+              <h3 class="panel-title" style="margin-bottom: 20px;">Administrator parolini almashtirish</h3>
+              <form id="passwordForm">
+                <div class="form-control-group">
+                  <label class="form-label">Eski parol:</label>
+                  <input type="password" id="oldPass" class="form-input">
+                </div>
+                <div class="form-control-group">
+                  <label class="form-label">Yangi parol:</label>
+                  <input type="password" id="newPass" class="form-input" required minlength="6">
+                </div>
+                <div class="form-control-group">
+                  <label class="form-label">Yangi parolni takrorlang:</label>
+                  <input type="password" id="confirmPass" class="form-input" required minlength="6">
+                </div>
+                <button type="submit" class="btn btn-danger">Parolni yangilash</button>
+              </form>
+            </div>
+          </div>
+        </div>
+      </section>
+
+    </div>
+  </main>
+
+  <!-- MODAL: CERTIFICATE CREATE / EDIT -->
+  <div id="certModal" class="modal-backdrop">
+    <div class="modal-dialog">
+      <div class="modal-header">
+        <h3 class="modal-title" id="certModalTitle">Yangi sertifikat berish</h3>
+        <button class="btn-close" onclick="closeCertModal()">&times;</button>
+      </div>
+
+      <form id="certForm">
+        <input type="hidden" id="certEditId">
+
+        <div class="form-control-group">
+          <label class="form-label" for="certCourseId">Kurs / Sertifikat turi: *</label>
+          <select id="certCourseId" class="form-select" required></select>
+        </div>
+
+        <div class="form-control-group">
+          <label class="form-label" for="certFio">Tinglovchining to‘liq F.I.Sh.: *</label>
+          <input type="text" id="certFio" class="form-input" placeholder="ALIMOV BEHZOD SHAVKATOVICH" required>
+        </div>
+
+        <div class="form-grid-2">
+          <div class="form-control-group">
+            <label class="form-label" for="certPinfl">PINFL / JSHSHIR (14 raqam): *</label>
+            <input type="text" id="certPinfl" class="form-input" placeholder="14 ta raqam" maxlength="14" required>
+          </div>
+          <div class="form-control-group">
+            <label class="form-label" for="certPassport">Pasport seriya va raqam:</label>
+            <input type="text" id="certPassport" class="form-input" placeholder="AA1234567">
+          </div>
+        </div>
+
+        <div class="form-grid-2">
+          <div class="form-control-group">
+            <label class="form-label" for="certNo">Sertifikat raqami:</label>
+            <input type="text" id="certNo" class="form-input" placeholder="Bo‘sh qolsa avtomatik (000001)">
+          </div>
+          <div class="form-control-group">
+            <label class="form-label" for="certRegNo">Qayd raqami:</label>
+            <input type="text" id="certRegNo" class="form-input" placeholder="Masalan: 3153">
+          </div>
+        </div>
+
+        <div class="form-grid-2">
+          <div class="form-control-group">
+            <label class="form-label" for="certScore">To‘plangan ball:</label>
+            <input type="number" step="0.1" id="certScore" class="form-input" placeholder="Masalan: 88.5">
+          </div>
+          <div class="form-control-group">
+            <label class="form-label" for="certDate">Berilgan sana: *</label>
+            <input type="date" id="certDate" class="form-input" required>
+          </div>
+        </div>
+
+        <div class="form-grid-2">
+          <div class="form-control-group">
+            <label class="form-label" for="certTemplate">Dizayn shabloni:</label>
+            <select id="certTemplate" class="form-select">
+              <option value="">Kurs bo‘yicha standart</option>
+              <option value="davlat">Davlat namunasi (vertikal)</option>
+              <option value="zamonaviy">Zamonaviy minimal (vertikal)</option>
+              <option value="korporativ">Korporativ ko‘k (vertikal)</option>
+              <option value="diplom">Klassik diplom (gorizontal)</option>
+            </select>
+          </div>
+          <div class="form-control-group">
+            <label class="form-label" for="certStatus">Holat:</label>
+            <select id="certStatus" class="form-select">
+              <option value="active">Faol (Active)</option>
+              <option value="revoked">Bekor qilingan (Revoked)</option>
+            </select>
+          </div>
+        </div>
+
+        <div class="form-control-group">
+          <label class="form-label" for="certNote">Ichki eslatma / Izoh:</label>
+          <textarea id="certNote" class="form-textarea" placeholder="Qo‘shimcha ma‘lumotlar..."></textarea>
+        </div>
+
+        <div style="display: flex; justify-content: flex-end; gap: 12px; margin-top: 24px;">
+          <button type="button" class="btn btn-secondary" onclick="closeCertModal()">Bekor qilish</button>
+          <button type="submit" class="btn btn-primary" id="btnSaveCert">Saqlash</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- MODAL: COURSE CREATE / EDIT WITH LIVE PREVIEW -->
+  <div id="courseModal" class="modal-backdrop">
+    <div class="modal-dialog" style="max-width: 1060px;">
+      <div class="modal-header">
+        <h3 class="modal-title" id="courseModalTitle">Kurs sozlamalari va shablon tanlash</h3>
+        <button class="btn-close" onclick="closeCourseModal()">&times;</button>
+      </div>
+
+      <form id="courseForm">
+        <input type="hidden" id="courseEditId">
+
+        <div class="preview-container">
+          <!-- Form Left Column -->
+          <div>
+            <div class="form-grid-2">
+              <div class="form-control-group">
+                <label class="form-label">Kurs kodi (URL / Identifikator): *</label>
+                <input type="text" id="courseCode" class="form-input" placeholder="mo yoki it-2026" required>
+              </div>
+              <div class="form-control-group">
+                <label class="form-label">Sertifikat seriyasi: *</label>
+                <input type="text" id="courseSeries" class="form-input" placeholder="MO" required>
+              </div>
+            </div>
+
+            <div class="form-control-group">
+              <label class="form-label">Kurs to‘liq nomi: *</label>
+              <input type="text" id="courseTitle" class="form-input" placeholder="Davlat tilida ish yuritish kursi" required>
+            </div>
+
+            <div class="form-control-group">
+              <label class="form-label">Yuqori sarlavha (Vazirlik nomi): *</label>
+              <input type="text" id="courseOrg1" class="form-input" placeholder="O‘ZBEKISTON RESPUBLIKASI..." required>
+            </div>
+
+            <div class="form-control-group">
+              <label class="form-label">Muassasa nomi (2-qator):</label>
+              <textarea id="courseOrg2" class="form-textarea" style="min-height: 50px;" placeholder="MALAKA OSHIRISH MARKAZI"></textarea>
+            </div>
+
+            <!-- 4 Templates Selection Cards -->
+            <label class="form-label" style="margin-top: 10px;">Dizayn shablonini tanlang: *</label>
+            <input type="hidden" id="courseTemplate" value="davlat">
+            <div class="template-selector-grid">
+              <div class="tpl-card selected" data-tpl="davlat" onclick="selectTemplate('davlat')">
+                <strong style="font-size: 13.5px;">Davlat uslubi</strong>
+                <div class="tpl-badge">Vertikal A4</div>
+              </div>
+              <div class="tpl-card" data-tpl="zamonaviy" onclick="selectTemplate('zamonaviy')">
+                <strong style="font-size: 13.5px;">Zamonaviy</strong>
+                <div class="tpl-badge">Vertikal A4</div>
+              </div>
+              <div class="tpl-card" data-tpl="korporativ" onclick="selectTemplate('korporativ')">
+                <strong style="font-size: 13.5px;">Korporativ ko‘k</strong>
+                <div class="tpl-badge">Vertikal A4</div>
+              </div>
+              <div class="tpl-card" data-tpl="diplom" onclick="selectTemplate('diplom')">
+                <strong style="font-size: 13.5px;">Klassik diplom</strong>
+                <div class="tpl-badge">Albom A4</div>
+              </div>
+            </div>
+
+            <div class="form-grid-2">
+              <div class="form-control-group">
+                <label class="form-label">O‘quv soati:</label>
+                <input type="number" id="courseHours" class="form-input" value="144">
+              </div>
+              <div class="form-control-group">
+                <label class="form-label">Aktsent rangi (#hex):</label>
+                <div style="display: flex; gap: 8px;">
+                  <input type="color" id="courseAccentColor" value="#1a56db" style="width: 44px; height: 38px; padding: 2px; border: 1px solid #cbd5e1; border-radius: 8px; cursor: pointer;">
+                  <input type="text" id="courseAccent" class="form-input" value="#1a56db">
+                </div>
+              </div>
+            </div>
+
+            <div class="form-grid-2">
+              <div class="form-control-group">
+                <label class="form-label">Boshlanish sanasi:</label>
+                <input type="date" id="courseStartDate" class="form-input">
+              </div>
+              <div class="form-control-group">
+                <label class="form-label">Tugash sanasi:</label>
+                <input type="date" id="courseEndDate" class="form-input">
+              </div>
+            </div>
+
+            <div class="form-control-group">
+              <label class="form-label">Rahbar (Direktor):</label>
+              <input type="text" id="courseDirector" class="form-input" value="I.M. Azimov">
+            </div>
+
+            <div class="form-control-group">
+              <label class="form-label">Asosiy matn shabloni:</label>
+              <textarea id="courseBodyText" class="form-textarea" style="min-height: 70px;">{{START}}dan {{END}}gacha {{HOURS}} soatga mo'ljallangan «{{TITLE}}» kursi bo'yicha malakasini oshirdi.</textarea>
+              <small style="color: #64748b; font-size: 11px;">Mavjud o‘rinbosarlar: {{START}}, {{END}}, {{HOURS}}, {{TITLE}}, {{SCORE}}</small>
+            </div>
+
+            <div style="display: flex; gap: 20px; align-items: center; margin-top: 10px;">
+              <label style="display: flex; align-items: center; gap: 8px; cursor: pointer; font-size: 13.5px; font-weight: 600;">
+                <input type="checkbox" id="courseShowScore" checked> Ball ko‘rsatilsin
+              </label>
+              <label style="display: flex; align-items: center; gap: 8px; cursor: pointer; font-size: 13.5px; font-weight: 600;">
+                <input type="checkbox" id="courseActive" checked> Kurs faol
+              </label>
+            </div>
+          </div>
+
+          <!-- Preview Right Column -->
+          <div class="preview-frame-wrap">
+            <div class="preview-header-bar">
+              <span>✦ Jonli shablon ko‘rinishi (HTML Preview)</span>
+              <span id="previewStatus">Yangilanmoqda...</span>
+            </div>
+            <iframe id="previewIframe" class="preview-iframe"></iframe>
+          </div>
+        </div>
+
+        <div style="display: flex; justify-content: flex-end; gap: 12px; margin-top: 24px;">
+          <button type="button" class="btn btn-secondary" onclick="closeCourseModal()">Bekor qilish</button>
+          <button type="submit" class="btn btn-primary" id="btnSaveCourse">Kursni saqlash</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- MODAL: MANDATORY PASSWORD CHANGE -->
+  <div id="mandatoryPassModal" class="modal-backdrop">
+    <div class="modal-dialog" style="max-width: 440px;">
+      <div class="modal-header">
+        <h3 class="modal-title" style="color: #b91c1c;">⚠️ Parolni o‘zgartirish majburiy</h3>
+      </div>
+      <p style="font-size: 13.5px; color: #475569; margin-bottom: 20px; line-height: 1.5;">
+        Siz hozirda tizimning standart boshlang‘ich parolidan foydalanmoqdasiz. Xavfsizlik talablariga muvofiq, davom etish uchun o‘zingizga yangi mustahkam parol o‘rnating.
+      </p>
+
+      <form id="mandatoryPassForm">
+        <div class="form-control-group">
+          <label class="form-label">Yangi parol (kamida 6 ta belgi):</label>
+          <input type="password" id="mNewPass" class="form-input" required minlength="6" placeholder="••••••••">
+        </div>
+        <div class="form-control-group">
+          <label class="form-label">Yangi parolni tasdiqlang:</label>
+          <input type="password" id="mConfirmPass" class="form-input" required minlength="6" placeholder="••••••••">
+        </div>
+
+        <button type="submit" class="btn btn-primary" style="width: 100%; margin-top: 10px;">
+          Parolni yangilash va tizimga kirish
+        </button>
+      </form>
+    </div>
+  </div>
+
+  <!-- Toast Element -->
+  <div id="toast" class="toast"></div>
+
+  <script>
+    // State
+    let currentTab = 'dashboard';
+    let certPage = 1;
+    let certTotalPages = 1;
+    let coursesList = [];
+    let previewDebounceTimer = null;
+
+    // Toast helper
+    function showToast(msg, type = 'success') {
+      const toast = document.getElementById('toast');
+      toast.textContent = msg;
+      toast.className = `toast ${type} show`;
+      setTimeout(() => { toast.className = 'toast'; }, 3500);
+    }
+
+    // Navigation Tab Switching
+    document.querySelectorAll('.nav-item').forEach(item => {
+      item.addEventListener('click', () => {
+        const tab = item.getAttribute('data-tab');
+        switchTab(tab);
+      });
+    });
+
+    function switchTab(tabId) {
+      currentTab = tabId;
+      document.querySelectorAll('.nav-item').forEach(i => i.classList.remove('active'));
+      const activeNav = document.querySelector(`.nav-item[data-tab="${tabId}"]`);
+      if (activeNav) activeNav.classList.add('active');
+
+      document.querySelectorAll('.tab-section').forEach(s => s.classList.remove('active'));
+      const activeSection = document.getElementById(`tab-${tabId}`);
+      if (activeSection) activeSection.classList.add('active');
+
+      const titles = {
+        dashboard: 'Boshqaruv paneli',
+        certificates: 'Sertifikatlar reyestri',
+        courses: 'Kurslar va Shablonlar',
+        import: 'Excel Ommaviy Import',
+        settings: 'Tizim sozlamalari'
+      };
+      document.getElementById('pageTitle').textContent = titles[tabId] || 'Admin Panel';
+
+      // Refresh data on tab switch
+      if (tabId === 'dashboard') loadStats();
+      if (tabId === 'certificates') loadCertificates();
+      if (tabId === 'courses') loadCourses();
+      if (tabId === 'import') populateImportCourses();
+      if (tabId === 'settings') loadSettings();
+    }
+
+    // Auth & Init
+    async function initAdmin() {
+      try {
+        const res = await fetch('/admin/api/me');
+        if (res.status === 401) {
+          window.location.href = '/admin/login';
+          return;
+        }
+        const data = await res.json();
+        if (data.admin) {
+          document.getElementById('sidebarAdminName').textContent = data.admin.full_name || data.admin.username;
+          document.getElementById('sidebarAdminRole').textContent = data.admin.role || 'Admin';
+
+          // Mandatory password change check
+          if (data.admin.must_change_password) {
+            document.getElementById('mandatoryPassModal').classList.add('active');
+          }
+        }
+
+        // Initial loads
+        await loadCoursesList();
+        loadStats();
+      } catch (err) {
+        console.error('Init error:', err);
+      }
+    }
+    initAdmin();
+
+    // Logout
+    document.getElementById('btnLogout').addEventListener('click', async () => {
+      if (confirm('Tizimdan chiqishni xohlaysizmi?')) {
+        await fetch('/admin/api/logout', { method: 'POST' });
+        window.location.href = '/admin/login';
+      }
+    });
+
+    // Mandatory Password Change form
+    document.getElementById('mandatoryPassForm').addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const newPassword = document.getElementById('mNewPass').value;
+      const confirmPass = document.getElementById('mConfirmPass').value;
+
+      if (newPassword !== confirmPass) {
+        showToast('Parollar mos kelmadi!', 'error');
+        return;
+      }
+
+      try {
+        const res = await fetch('/admin/api/password', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ newPassword })
+        });
+        const data = await res.json();
+        if (res.ok) {
+          showToast('Parol muvaffaqiyatli o‘rnatildi!');
+          document.getElementById('mandatoryPassModal').classList.remove('active');
+        } else {
+          showToast(data.error || 'Xatolik', 'error');
+        }
+      } catch (err) {
+        showToast('Xatolik yuz berdi', 'error');
+      }
+    });
+
+    // 1. DASHBOARD STATS
+    async function loadStats() {
+      try {
+        const res = await fetch('/admin/api/stats');
+        const data = await res.json();
+
+        document.getElementById('statTotalCerts').textContent = data.total_certs;
+        document.getElementById('statActiveCerts').textContent = data.active_certs;
+        document.getElementById('statTotalCourses').textContent = data.total_courses;
+        document.getElementById('statTotalDownloads').textContent = data.total_downloads;
+
+        const tbody = document.getElementById('recentCertsTbody');
+        if (!data.recent_certs || data.recent_certs.length === 0) {
+          tbody.innerHTML = '<tr><td colspan="7" style="text-align: center; color: #94a3b8;">Hozircha sertifikatlar mavjud emas.</td></tr>';
+          return;
+        }
+
+        tbody.innerHTML = data.recent_certs.map(c => `
+          <tr>
+            <td><strong>${c.series} № ${c.cert_no}</strong></td>
+            <td><strong>${c.fio}</strong></td>
+            <td style="font-family: monospace;">${c.pinfl}</td>
+            <td>${c.course_title}</td>
+            <td>${c.formatted_date}</td>
+            <td><span class="status-tag ${c.status}">${c.status === 'active' ? 'Faol' : 'Bekor qilingan'}</span></td>
+            <td>
+              <a href="/yuklash/${c.uid}" target="_blank" class="btn btn-secondary btn-sm" title="PDF">
+                PDF
+              </a>
+            </td>
+          </tr>
+        `).join('');
+      } catch (err) {
+        console.error('Stats error:', err);
+      }
+    }
+
+    // 2. CERTIFICATES LIST & CRUD
+    async function loadCertificates() {
+      const q = document.getElementById('certSearchQuery').value;
+      const course = document.getElementById('certCourseFilter').value;
+
+      try {
+        const res = await fetch(`/admin/api/certificates?q=${encodeURIComponent(q)}&course=${encodeURIComponent(course)}&page=${certPage}`);
+        const data = await res.json();
+
+        certTotalPages = data.totalPages || 1;
+        document.getElementById('certPaginationInfo').textContent = `${data.total} tadan ${data.items.length} ta ko‘rsatilmoqda (Sahifa ${data.page} / ${certTotalPages})`;
+
+        document.getElementById('btnPrevPage').disabled = certPage <= 1;
+        document.getElementById('btnNextPage').disabled = certPage >= certTotalPages;
+
+        const tbody = document.getElementById('certsTbody');
+        if (!data.items || data.items.length === 0) {
+          tbody.innerHTML = '<tr><td colspan="9" style="text-align: center; color: #94a3b8;">Sertifikatlar topilmadi.</td></tr>';
+          return;
+        }
+
+        tbody.innerHTML = data.items.map((c, idx) => `
+          <tr>
+            <td>${(certPage - 1) * 25 + idx + 1}</td>
+            <td><strong>${c.series} № ${c.cert_no}</strong></td>
+            <td><strong>${c.fio}</strong></td>
+            <td style="font-family: monospace;">${c.pinfl}</td>
+            <td>${c.course_title}</td>
+            <td>${c.score != null ? c.score : '—'}</td>
+            <td>${c.issue_date}</td>
+            <td><span class="status-tag ${c.status}">${c.status === 'active' ? 'Faol' : 'Bekor qilingan'}</span></td>
+            <td>
+              <div style="display: flex; gap: 6px;">
+                <a href="/admin/api/certificates/${c.id}/pdf" target="_blank" class="btn btn-secondary btn-sm" title="PDF ko‘rish">
+                  PDF
+                </a>
+                <button class="btn btn-secondary btn-sm" onclick="editCert(${JSON.stringify(c).replace(/"/g, '&quot;')})">
+                  Tahrirlash
+                </button>
+                <button class="btn btn-danger btn-sm" onclick="deleteCert(${c.id})">
+                  O‘chirish
+                </button>
+              </div>
+            </td>
+          </tr>
+        `).join('');
+      } catch (err) {
+        console.error('Certs load error:', err);
+      }
+    }
+
+    // Search and filter triggers
+    let searchTimer = null;
+    document.getElementById('certSearchQuery').addEventListener('input', () => {
+      clearTimeout(searchTimer);
+      searchTimer = setTimeout(() => {
+        certPage = 1;
+        loadCertificates();
+      }, 300);
+    });
+
+    document.getElementById('certCourseFilter').addEventListener('change', () => {
+      certPage = 1;
+      loadCertificates();
+    });
+
+    function changeCertPage(delta) {
+      const next = certPage + delta;
+      if (next >= 1 && next <= certTotalPages) {
+        certPage = next;
+        loadCertificates();
+      }
+    }
+
+    // Cert Modal
+    function openCertModal(cert = null) {
+      document.getElementById('certEditId').value = cert ? cert.id : '';
+      document.getElementById('certModalTitle').textContent = cert ? 'Sertifikatni tahrirlash' : 'Yangi sertifikat berish';
+
+      document.getElementById('certCourseId').value = cert ? cert.course_id : (coursesList[0] ? coursesList[0].id : '');
+      document.getElementById('certFio').value = cert ? cert.fio : '';
+      document.getElementById('certPinfl').value = cert ? cert.pinfl : '';
+      document.getElementById('certPassport').value = cert ? (cert.passport || '') : '';
+      document.getElementById('certNo').value = cert ? cert.cert_no : '';
+      document.getElementById('certRegNo').value = cert ? cert.reg_no : '';
+      document.getElementById('certScore').value = cert && cert.score != null ? cert.score : '';
+      document.getElementById('certDate').value = cert ? cert.issue_date : new Date().toISOString().split('T')[0];
+      document.getElementById('certTemplate').value = cert ? (cert.template || '') : '';
+      document.getElementById('certStatus').value = cert ? cert.status : 'active';
+      document.getElementById('certNote').value = cert ? (cert.note || '') : '';
+
+      document.getElementById('certModal').classList.add('active');
+    }
+
+    function closeCertModal() {
+      document.getElementById('certModal').classList.remove('active');
+    }
+
+    function editCert(cert) {
+      openCertModal(cert);
+    }
+
+    async function deleteCert(id) {
+      if (confirm('Ushbu sertifikatni o‘chirishni tasdiqlaysizmi?')) {
+        try {
+          const res = await fetch(`/admin/api/certificates/${id}`, { method: 'DELETE' });
+          if (res.ok) {
+            showToast('Sertifikat muvaffaqiyatli o‘chirildi!');
+            loadCertificates();
+            loadStats();
+          } else {
+            const err = await res.json();
+            showToast(err.error || 'Xatolik yuz berdi', 'error');
+          }
+        } catch (err) {
+          showToast('Xatolik', 'error');
+        }
+      }
+    }
+
+    // Save Certificate Form
+    document.getElementById('certForm').addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const id = document.getElementById('certEditId').value;
+      const payload = {
+        course_id: document.getElementById('certCourseId').value,
+        fio: document.getElementById('certFio').value.trim(),
+        pinfl: document.getElementById('certPinfl').value.replace(/\D/g, '').trim(),
+        passport: document.getElementById('certPassport').value.trim(),
+        cert_no: document.getElementById('certNo').value.trim(),
+        reg_no: document.getElementById('certRegNo').value.trim(),
+        score: document.getElementById('certScore').value,
+        issue_date: document.getElementById('certDate').value,
+        template: document.getElementById('certTemplate').value,
+        status: document.getElementById('certStatus').value,
+        note: document.getElementById('certNote').value.trim()
+      };
+
+      if (payload.pinfl.length !== 14) {
+        showToast('PINFL aniq 14 ta raqam bo‘lishi kerak!', 'error');
+        return;
+      }
+
+      const method = id ? 'PUT' : 'POST';
+      const url = id ? `/admin/api/certificates/${id}` : '/admin/api/certificates';
+
+      try {
+        const res = await fetch(url, {
+          method,
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(payload)
+        });
+        const data = await res.json();
+
+        if (res.ok) {
+          showToast(id ? 'Sertifikat yangilandi!' : `Sertifikat yaratildi (№ ${data.cert_no})!`);
+          closeCertModal();
+          loadCertificates();
+          loadStats();
+        } else {
+          showToast(data.error || 'Xatolik', 'error');
+        }
+      } catch (err) {
+        showToast('Server bilan xatolik', 'error');
+      }
+    });
+
+    // 3. COURSES & TEMPLATES
+    async function loadCoursesList() {
+      try {
+        const res = await fetch('/admin/api/courses');
+        coursesList = await res.json();
+
+        // Update selects
+        const certCourseSelect = document.getElementById('certCourseId');
+        const filterCourseSelect = document.getElementById('certCourseFilter');
+        const importCourseSelect = document.getElementById('importCourse');
+
+        certCourseSelect.innerHTML = '';
+        importCourseSelect.innerHTML = '<option value="">Kursni tanlang...</option>';
+        filterCourseSelect.innerHTML = '<option value="all">Barcha kurslar</option>';
+
+        coursesList.forEach(c => {
+          const opt1 = document.createElement('option');
+          opt1.value = c.id;
+          opt1.textContent = `${c.title} (${c.series})`;
+          certCourseSelect.appendChild(opt1);
+
+          const opt2 = document.createElement('option');
+          opt2.value = c.id;
+          opt2.textContent = `${c.title} (${c.series})`;
+          importCourseSelect.appendChild(opt2);
+
+          const opt3 = document.createElement('option');
+          opt3.value = c.id;
+          opt3.textContent = `${c.title} (${c.series})`;
+          filterCourseSelect.appendChild(opt3);
+        });
+      } catch (err) {
+        console.error('Load courses list error:', err);
+      }
+    }
+
+    async function loadCourses() {
+      await loadCoursesList();
+      const tbody = document.getElementById('coursesTbody');
+      if (!coursesList || coursesList.length === 0) {
+        tbody.innerHTML = '<tr><td colspan="8" style="text-align: center; color: #94a3b8;">Kurslar mavjud emas.</td></tr>';
+        return;
+      }
+
+      tbody.innerHTML = coursesList.map(c => `
+        <tr>
+          <td><code>${c.code}</code></td>
+          <td><strong>${c.title}</strong></td>
+          <td>${c.series}</td>
+          <td><span class="tpl-badge">${c.template}</span></td>
+          <td>${c.hours} soat</td>
+          <td><strong>${c.cert_count || 0}</strong> ta</td>
+          <td><span class="status-tag ${c.active ? 'active' : 'revoked'}">${c.active ? 'Faol' : 'Nofaol'}</span></td>
+          <td>
+            <div style="display: flex; gap: 6px;">
+              <button class="btn btn-secondary btn-sm" onclick="editCourse(${JSON.stringify(c).replace(/"/g, '&quot;')})">
+                Tahrirlash / Shablon
+              </button>
+              <button class="btn btn-danger btn-sm" onclick="deleteCourse(${c.id})">
+                O‘chirish
+              </button>
+            </div>
+          </td>
+        </tr>
+      `).join('');
+    }
+
+    function openCourseModal(course = null) {
+      document.getElementById('courseEditId').value = course ? course.id : '';
+      document.getElementById('courseModalTitle').textContent = course ? 'Kursni tahrirlash' : 'Yangi kurs yaratish';
+
+      document.getElementById('courseCode').value = course ? course.code : '';
+      document.getElementById('courseSeries').value = course ? course.series : 'MO';
+      document.getElementById('courseTitle').value = course ? course.title : '';
+      document.getElementById('courseOrg1').value = course ? course.org_line1 : 'O‘ZBEKISTON RESPUBLIKASI OLIY TA‘LIM, FAN VA INNOVATSIYALAR VAZIRLIGI';
+      document.getElementById('courseOrg2').value = course ? course.org_line2 : 'MALAKA OSHIRISH VA QAYTA TAYYORLASH MARKAZI';
+      document.getElementById('courseHours').value = course ? course.hours : 144;
+      document.getElementById('courseAccent').value = course ? course.accent : '#1a56db';
+      document.getElementById('courseAccentColor').value = course ? course.accent : '#1a56db';
+      document.getElementById('courseStartDate').value = course ? (course.start_date || '') : '';
+      document.getElementById('courseEndDate').value = course ? (course.end_date || '') : '';
+      document.getElementById('courseDirector').value = course ? course.director : 'I.M. Azimov';
+      document.getElementById('courseBodyText').value = course ? course.body_text : "{{START}}dan {{END}}gacha {{HOURS}} soatga mo'ljallangan «{{TITLE}}» kursi bo'yicha malakasini oshirdi.";
+      document.getElementById('courseShowScore').checked = course ? Boolean(course.show_score) : true;
+      document.getElementById('courseActive').checked = course ? Boolean(course.active) : true;
+
+      selectTemplate(course ? course.template : 'davlat', false);
+
+      document.getElementById('courseModal').classList.add('active');
+      triggerLivePreview();
+    }
+
+    function closeCourseModal() {
+      document.getElementById('courseModal').classList.remove('active');
+    }
+
+    function editCourse(course) {
+      openCourseModal(course);
+    }
+
+    async function deleteCourse(id) {
+      if (confirm('Ushbu kursni o‘chirishni tasdiqlaysizmi?')) {
+        try {
+          const res = await fetch(`/admin/api/courses/${id}`, { method: 'DELETE' });
+          const data = await res.json();
+          if (res.ok) {
+            showToast('Kurs o‘chirildi!');
+            loadCourses();
+            loadStats();
+          } else {
+            showToast(data.error || 'Xatolik', 'error');
+          }
+        } catch (err) {
+          showToast('Xatolik', 'error');
+        }
+      }
+    }
+
+    function selectTemplate(tplName, updatePreview = true) {
+      document.getElementById('courseTemplate').value = tplName;
+      document.querySelectorAll('.tpl-card').forEach(card => {
+        if (card.getAttribute('data-tpl') === tplName) {
+          card.classList.add('selected');
+        } else {
+          card.classList.remove('selected');
+        }
+      });
+      if (updatePreview) triggerLivePreview();
+    }
+
+    // Color picker sync
+    document.getElementById('courseAccentColor').addEventListener('input', (e) => {
+      document.getElementById('courseAccent').value = e.target.value;
+      triggerLivePreview();
+    });
+
+    document.getElementById('courseAccent').addEventListener('input', (e) => {
+      if (/^#[0-9A-F]{6}$/i.test(e.target.value)) {
+        document.getElementById('courseAccentColor').value = e.target.value;
+      }
+      triggerLivePreview();
+    });
+
+    // Debounced Live Preview in iframe
+    function triggerLivePreview() {
+      clearTimeout(previewDebounceTimer);
+      document.getElementById('previewStatus').textContent = 'Yangilanmoqda...';
+
+      previewDebounceTimer = setTimeout(async () => {
+        const payload = {
+          template: document.getElementById('courseTemplate').value,
+          title: document.getElementById('courseTitle').value,
+          org_line1: document.getElementById('courseOrg1').value,
+          org_line2: document.getElementById('courseOrg2').value,
+          series: document.getElementById('courseSeries').value,
+          hours: document.getElementById('courseHours').value,
+          start_date: document.getElementById('courseStartDate').value,
+          end_date: document.getElementById('courseEndDate').value,
+          director: document.getElementById('courseDirector').value,
+          body_text: document.getElementById('courseBodyText').value,
+          show_score: document.getElementById('courseShowScore').checked ? 1 : 0,
+          accent: document.getElementById('courseAccent').value,
+          sample_fio: 'ALIMOV BEHZOD SHAVKATOVICH',
+          sample_score: 92.5
+        };
+
+        try {
+          const res = await fetch('/admin/api/preview', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(payload)
+          });
+          const html = await res.text();
+          const iframe = document.getElementById('previewIframe');
+          iframe.srcdoc = html;
+          document.getElementById('previewStatus').textContent = '✓ Tayyor';
+        } catch (err) {
+          document.getElementById('previewStatus').textContent = 'Preview xatosi';
+        }
+      }, 300);
+    }
+
+    // Listen to form inputs for live preview updates
+    ['courseTitle', 'courseOrg1', 'courseOrg2', 'courseSeries', 'courseHours', 'courseStartDate', 'courseEndDate', 'courseDirector', 'courseBodyText', 'courseShowScore'].forEach(id => {
+      document.getElementById(id).addEventListener('input', triggerLivePreview);
+    });
+
+    // Save Course Form
+    document.getElementById('courseForm').addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const id = document.getElementById('courseEditId').value;
+      const payload = {
+        code: document.getElementById('courseCode').value.trim(),
+        title: document.getElementById('courseTitle').value.trim(),
+        org_line1: document.getElementById('courseOrg1').value.trim(),
+        org_line2: document.getElementById('courseOrg2').value.trim(),
+        template: document.getElementById('courseTemplate').value,
+        series: document.getElementById('courseSeries').value.trim().toUpperCase(),
+        hours: parseInt(document.getElementById('courseHours').value, 10) || 72,
+        start_date: document.getElementById('courseStartDate').value || null,
+        end_date: document.getElementById('courseEndDate').value || null,
+        director: document.getElementById('courseDirector').value.trim(),
+        body_text: document.getElementById('courseBodyText').value,
+        show_score: document.getElementById('courseShowScore').checked ? 1 : 0,
+        accent: document.getElementById('courseAccent').value,
+        active: document.getElementById('courseActive').checked ? 1 : 0
+      };
+
+      const method = id ? 'PUT' : 'POST';
+      const url = id ? `/admin/api/courses/${id}` : '/admin/api/courses';
+
+      try {
+        const res = await fetch(url, {
+          method,
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(payload)
+        });
+        const data = await res.json();
+
+        if (res.ok) {
+          showToast(id ? 'Kurs yangilandi!' : 'Yangi kurs yaratildi!');
+          closeCourseModal();
+          loadCourses();
+          loadStats();
+        } else {
+          showToast(data.error || 'Xatolik', 'error');
+        }
+      } catch (err) {
+        showToast('Server xatosi', 'error');
+      }
+    });
+
+    // 4. EXCEL IMPORT
+    function populateImportCourses() {
+      loadCoursesList();
+      document.getElementById('importDate').value = new Date().toISOString().split('T')[0];
+    }
+
+    document.getElementById('importForm').addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const courseId = document.getElementById('importCourse').value;
+      const date = document.getElementById('importDate').value;
+      const fileInput = document.getElementById('importFile');
+      const file = fileInput.files[0];
+
+      if (!courseId) {
+        showToast('Kursni tanlang!', 'error');
+        return;
+      }
+      if (!file) {
+        showToast('Faylni tanlang!', 'error');
+        return;
+      }
+
+      const formData = new FormData();
+      formData.append('course_id', courseId);
+      formData.append('issue_date', date);
+      formData.append('file', file);
+
+      const btn = document.getElementById('btnRunImport');
+      btn.disabled = true;
+      btn.textContent = 'Yuklanmoqda va tekshirilmoqda...';
+
+      const resBox = document.getElementById('importResultBox');
+      resBox.style.display = 'none';
+
+      try {
+        const res = await fetch('/admin/api/import', {
+          method: 'POST',
+          body: formData
+        });
+        const data = await res.json();
+
+        if (res.ok) {
+          showToast(`Import yakunlandi: ${data.successCount} ta muvaffaqiyatli qo‘shildi!`);
+          let html = `
+            <div style="background: white; border: 1px solid #e2e8f0; border-radius: 12px; padding: 20px;">
+              <h4 style="font-size: 16px; margin-bottom: 12px; color: #0f172a;">
+                Import natijalari (Jami: ${data.total} ta qator)
+              </h4>
+              <div style="display: flex; gap: 16px; margin-bottom: 16px;">
+                <span style="color: #16a34a; font-weight: 700;">✓ Qo‘shildi: ${data.successCount} ta</span>
+                <span style="color: #dc2626; font-weight: 700;">✕ Xatolar: ${data.errorCount} ta</span>
+              </div>
+          `;
+
+          if (data.errors && data.errors.length > 0) {
+            html += `
+              <div style="max-height: 200px; overflow-y: auto; background: #fef2f2; border: 1px solid #fecaca; border-radius: 8px; padding: 12px; font-size: 12.5px; color: #991b1b;">
+                <strong>Xatoliklar ro‘yxati:</strong>
+                <ul style="margin-left: 20px; margin-top: 6px;">
+                  ${data.errors.map(err => `<li>Qator ${err.row}: ${err.error}</li>`).join('')}
+                </ul>
+              </div>
+            `;
+          }
+
+          html += `</div>`;
+          resBox.innerHTML = html;
+          resBox.style.display = 'block';
+
+          fileInput.value = '';
+          loadStats();
+        } else {
+          showToast(data.error || 'Importda xatolik', 'error');
+        }
+      } catch (err) {
+        showToast('Server bilan xatolik', 'error');
+      } finally {
+        btn.disabled = false;
+        btn.textContent = 'Excel ro‘yxatini import qilish';
+      }
+    });
+
+    // 5. SETTINGS
+    async function loadSettings() {
+      try {
+        const res = await fetch('/admin/api/me');
+        const data = await res.json();
+        if (data.settings) {
+          document.getElementById('settingSiteTitle').value = data.settings.site_title || '';
+          document.getElementById('settingSiteOrg').value = data.settings.site_org || '';
+          document.getElementById('settingBaseUrl').value = data.settings.base_url || '';
+        }
+      } catch (err) {
+        console.error('Settings load error:', err);
+      }
+    }
+
+    document.getElementById('settingsForm').addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const payload = {
+        site_title: document.getElementById('settingSiteTitle').value,
+        site_org: document.getElementById('settingSiteOrg').value,
+        base_url: document.getElementById('settingBaseUrl').value
+      };
+
+      try {
+        const res = await fetch('/admin/api/settings', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(payload)
+        });
+        if (res.ok) {
+          showToast('Sozlamalar saqlandi!');
+        } else {
+          showToast('Xatolik yuz berdi', 'error');
+        }
+      } catch (err) {
+        showToast('Server xatosi', 'error');
+      }
+    });
+
+    // Logo upload
+    document.getElementById('logoForm').addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const fileInput = document.getElementById('logoFileInput');
+      if (!fileInput.files[0]) return;
+
+      const fd = new FormData();
+      fd.append('logo', fileInput.files[0]);
+
+      try {
+        const res = await fetch('/admin/api/logo', {
+          method: 'POST',
+          body: fd
+        });
+        const data = await res.json();
+        if (res.ok) {
+          showToast('Logo muvaffaqiyatli yuklandi!');
+          fileInput.value = '';
+        } else {
+          showToast(data.error || 'Yuklashda xatolik', 'error');
+        }
+      } catch (err) {
+        showToast('Server xatosi', 'error');
+      }
+    });
+
+    // Password change
+    document.getElementById('passwordForm').addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const oldPassword = document.getElementById('oldPass').value;
+      const newPassword = document.getElementById('newPass').value;
+      const confirmPass = document.getElementById('confirmPass').value;
+
+      if (newPassword !== confirmPass) {
+        showToast('Yangi parollar bir-biriga mos emas!', 'error');
+        return;
+      }
+
+      try {
+        const res = await fetch('/admin/api/password', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ oldPassword, newPassword })
+        });
+        const data = await res.json();
+        if (res.ok) {
+          showToast('Parol muvaffaqiyatli almashtirildi!');
+          document.getElementById('passwordForm').reset();
+        } else {
+          showToast(data.error || 'Xatolik', 'error');
+        }
+      } catch (err) {
+        showToast('Server xatosi', 'error');
+      }
+    });
+  </script>
+</body>
+</html>

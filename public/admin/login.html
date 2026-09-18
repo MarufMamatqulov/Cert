@@ -1,0 +1,289 @@
+<!DOCTYPE html>
+<html lang="uz">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Administrator tizimiga kirish — SER Tizim</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <style>
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    body {
+      font-family: 'Plus Jakarta Sans', sans-serif;
+      background: #0f172a;
+      color: #f8fafc;
+      min-height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 20px;
+      position: relative;
+      overflow: hidden;
+    }
+
+    /* Ambient background glows */
+    .glow-1 {
+      position: absolute;
+      top: -120px;
+      left: -120px;
+      width: 400px;
+      height: 400px;
+      background: radial-gradient(circle, rgba(37, 99, 235, 0.25) 0%, transparent 70%);
+      pointer-events: none;
+    }
+
+    .glow-2 {
+      position: absolute;
+      bottom: -150px;
+      right: -150px;
+      width: 500px;
+      height: 500px;
+      background: radial-gradient(circle, rgba(30, 58, 138, 0.35) 0%, transparent 70%);
+      pointer-events: none;
+    }
+
+    .login-container {
+      width: 100%;
+      max-width: 420px;
+      background: rgba(30, 41, 59, 0.7);
+      backdrop-filter: blur(20px);
+      -webkit-backdrop-filter: blur(20px);
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      border-radius: 24px;
+      padding: 36px 32px;
+      box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5);
+      position: relative;
+      z-index: 10;
+    }
+
+    .login-header {
+      text-align: center;
+      margin-bottom: 28px;
+    }
+
+    .brand-icon {
+      width: 52px;
+      height: 52px;
+      margin: 0 auto 16px auto;
+      border-radius: 14px;
+      background: linear-gradient(135deg, #2563eb 0%, #1e3a8a 100%);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: white;
+      font-size: 22px;
+      font-weight: 800;
+      box-shadow: 0 8px 16px rgba(37, 99, 235, 0.35);
+    }
+
+    .login-title {
+      font-size: 22px;
+      font-weight: 800;
+      color: #ffffff;
+      letter-spacing: -0.3px;
+    }
+
+    .login-desc {
+      font-size: 13.5px;
+      color: #94a3b8;
+      margin-top: 6px;
+    }
+
+    .form-group {
+      margin-bottom: 20px;
+    }
+
+    .form-label {
+      display: block;
+      font-size: 13px;
+      font-weight: 600;
+      color: #cbd5e1;
+      margin-bottom: 8px;
+    }
+
+    .form-input {
+      width: 100%;
+      padding: 13px 16px;
+      font-size: 14.5px;
+      font-family: inherit;
+      border-radius: 12px;
+      background: rgba(15, 23, 42, 0.6);
+      border: 1.5px solid #334155;
+      color: #f8fafc;
+      outline: none;
+      transition: all 0.2s ease;
+    }
+
+    .form-input:focus {
+      border-color: #3b82f6;
+      box-shadow: 0 0 0 4px rgba(59, 130, 246, 0.2);
+      background: rgba(15, 23, 42, 0.85);
+    }
+
+    .btn-login {
+      width: 100%;
+      padding: 14px 20px;
+      font-size: 15px;
+      font-weight: 700;
+      font-family: inherit;
+      color: white;
+      background: linear-gradient(135deg, #2563eb 0%, #1d4ed8 100%);
+      border: none;
+      border-radius: 12px;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 10px;
+      margin-top: 26px;
+      box-shadow: 0 10px 15px -3px rgba(37, 99, 235, 0.35);
+      transition: all 0.2s ease;
+    }
+
+    .btn-login:hover {
+      background: linear-gradient(135deg, #3b82f6 0%, #2563eb 100%);
+      transform: translateY(-1px);
+    }
+
+    .btn-login:disabled {
+      opacity: 0.65;
+      cursor: not-allowed;
+      transform: none;
+    }
+
+    .alert-error {
+      padding: 12px 14px;
+      background: rgba(220, 38, 38, 0.15);
+      border: 1px solid rgba(220, 38, 38, 0.4);
+      border-radius: 10px;
+      color: #fca5a5;
+      font-size: 13.5px;
+      margin-bottom: 20px;
+      display: none;
+    }
+
+    .back-home {
+      display: block;
+      text-align: center;
+      margin-top: 24px;
+      font-size: 13px;
+      color: #94a3b8;
+      text-decoration: none;
+      transition: color 0.2s ease;
+    }
+
+    .back-home:hover {
+      color: #ffffff;
+    }
+
+    .spinner {
+      width: 18px;
+      height: 18px;
+      border: 2px solid rgba(255, 255, 255, 0.3);
+      border-radius: 50%;
+      border-top-color: white;
+      animation: spin 0.7s linear infinite;
+    }
+
+    @keyframes spin {
+      to { transform: rotate(360deg); }
+    }
+  </style>
+</head>
+<body>
+  <div class="glow-1"></div>
+  <div class="glow-2"></div>
+
+  <div class="login-container">
+    <div class="login-header">
+      <div class="brand-icon">SER</div>
+      <h1 class="login-title">Admin tizimiga kirish</h1>
+      <p class="login-desc">Sertifikat boshqaruv paneli</p>
+    </div>
+
+    <div id="alertBox" class="alert-error"></div>
+
+    <form id="loginForm">
+      <div class="form-group">
+        <label class="form-label" for="username">Foydalanuvchi nomi (Login):</label>
+        <input 
+          type="text" 
+          id="username" 
+          class="form-input" 
+          placeholder="admin" 
+          required 
+          autocomplete="username"
+          autofocus
+        >
+      </div>
+
+      <div class="form-group">
+        <label class="form-label" for="password">Maxfiy parol:</label>
+        <input 
+          type="password" 
+          id="password" 
+          class="form-input" 
+          placeholder="••••••••" 
+          required 
+          autocomplete="current-password"
+        >
+      </div>
+
+      <button type="submit" id="btnLogin" class="btn-login">
+        <span id="btnText">Kirish</span>
+      </button>
+    </form>
+
+    <a href="/" class="back-home">← Qidiruv portaliga qaytish</a>
+  </div>
+
+  <script>
+    const loginForm = document.getElementById('loginForm');
+    const alertBox = document.getElementById('alertBox');
+    const btnLogin = document.getElementById('btnLogin');
+    const btnText = document.getElementById('btnText');
+
+    loginForm.addEventListener('submit', async (e) => {
+      e.preventDefault();
+
+      const username = document.getElementById('username').value.trim();
+      const password = document.getElementById('password').value;
+
+      alertBox.style.display = 'none';
+      btnLogin.disabled = true;
+      btnText.innerHTML = '<span class="spinner"></span> Tekshirilmoqda...';
+
+      try {
+        const res = await fetch('/admin/api/login', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ username, password })
+        });
+
+        const data = await res.json();
+
+        if (!res.ok) {
+          alertBox.textContent = data.error || 'Kirishda xatolik yuz berdi.';
+          alertBox.style.display = 'block';
+          return;
+        }
+
+        // Successfully logged in
+        window.location.href = '/admin';
+      } catch (err) {
+        alertBox.textContent = 'Server bilan aloqa uzildi. Iltimos qayta urinib ko‘ring.';
+        alertBox.style.display = 'block';
+      } finally {
+        btnLogin.disabled = false;
+        btnText.textContent = 'Kirish';
+      }
+    });
+  </script>
+</body>
+</html>
