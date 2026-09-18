@@ -220,6 +220,53 @@
       color: var(--text-muted);
     }
 
+    .captcha-row {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      flex-wrap: wrap;
+    }
+
+    .captcha-img-wrap {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .captcha-img {
+      height: 46px;
+      border-radius: 10px;
+      border: 1.5px solid var(--border);
+      box-shadow: var(--shadow-sm);
+    }
+
+    .btn-refresh-captcha {
+      background: #f1f5f9;
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      padding: 11px;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: var(--text-muted);
+      transition: all 0.2s ease;
+    }
+
+    .btn-refresh-captcha:hover {
+      background: #e2e8f0;
+      color: var(--primary);
+      transform: rotate(45deg);
+    }
+
+    .captcha-input {
+      flex: 1;
+      min-width: 140px;
+      font-size: 16px;
+      font-weight: 700;
+      letter-spacing: 1px;
+    }
+
     .btn-search {
       width: 100%;
       padding: 16px 24px;
@@ -501,6 +548,31 @@
             </div>
           </div>
 
+          <div class="form-group">
+            <label class="form-label" for="captchaInput">Xavfsizlik kodi (Matematik hisob): *</label>
+            <div class="captcha-row">
+              <div class="captcha-img-wrap">
+                <img id="captchaImg" class="captcha-img" src="" alt="Matematik captcha" title="Xavfsizlik kodi">
+                <button type="button" id="btnRefreshCaptcha" class="btn-refresh-captcha" title="Yangi kod olish">
+                  <svg width="18" height="18" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"/>
+                  </svg>
+                </button>
+              </div>
+              <input 
+                type="number" 
+                id="captchaInput" 
+                class="form-input captcha-input" 
+                placeholder="Natijani kiriting..." 
+                required 
+                autocomplete="off"
+              >
+            </div>
+            <small style="font-size: 11.5px; color: var(--text-muted); margin-top: 5px; display: block;">
+              Rasmdagi hisob-kitob natijasini yozing (masalan: 24 + 7 = 31)
+            </small>
+          </div>
+
           <button type="submit" id="btnSubmit" class="btn-search">
             <svg width="18" height="18" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/>
@@ -531,6 +603,25 @@
     const navTitle = document.getElementById('navTitle');
     const navOrg = document.getElementById('navOrg');
     const footerOrg = document.getElementById('footerOrg');
+    const captchaImg = document.getElementById('captchaImg');
+    const captchaInput = document.getElementById('captchaInput');
+    const btnRefreshCaptcha = document.getElementById('btnRefreshCaptcha');
+
+    // Fetch mathematical captcha
+    async function loadCaptcha() {
+      try {
+        const res = await fetch('/api/captcha?t=' + Date.now());
+        if (res.ok) {
+          const data = await res.json();
+          captchaImg.src = data.svg;
+          captchaInput.value = '';
+        }
+      } catch (err) {
+        console.warn('Captcha load error:', err);
+      }
+    }
+    loadCaptcha();
+    btnRefreshCaptcha.addEventListener('click', loadCaptcha);
 
     // Fetch site config & active courses
     async function loadConfig() {
@@ -578,10 +669,17 @@
 
       const pinfl = pinflInput.value.replace(/\D/g, '').trim();
       const course = courseSelect.value;
+      const captcha = captchaInput.value.trim();
 
       if (pinfl.length !== 14) {
         showError('JSHSHIR (PINFL) to‘liq 14 ta raqamdan iborat bo‘lishi kerak.');
         pinflInput.focus();
+        return;
+      }
+
+      if (!captcha) {
+        showError('Iltimos, xavfsizlik kodi (matematik hisob) natijasini kiriting.');
+        captchaInput.focus();
         return;
       }
 
@@ -593,15 +691,22 @@
         const res = await fetch('/api/search', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ pinfl, course })
+          body: JSON.stringify({ pinfl, course, captcha })
         });
 
         const data = await res.json();
 
         if (!res.ok) {
           showError(data.error || 'Qidiruvda xatolik yuz berdi.');
+          if (data.reloadCaptcha) {
+            loadCaptcha();
+            captchaInput.focus();
+          }
           return;
         }
+
+        // Always reload captcha after a search for security
+        loadCaptcha();
 
         if (!data.certificates || data.certificates.length === 0) {
           showNoResults();

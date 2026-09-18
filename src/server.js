@@ -23,6 +23,8 @@ const {
   formatUzDate
 } = require('./render');
 
+const { generateMathCaptcha } = require('./captcha');
+
 // Initialize database
 initDb();
 
@@ -120,6 +122,16 @@ app.use('/uploads', express.static(uploadsDir));
 // 1. PUBLIC ROUTES (Ochiq qism)
 // ==========================================
 
+// Mathematical Captcha generator endpoint
+app.get('/api/captcha', (req, res) => {
+  const captcha = generateMathCaptcha();
+  req.session.captcha = {
+    answer: captcha.answer,
+    expires: Date.now() + 5 * 60 * 1000 // 5 minutes validity
+  };
+  res.json({ svg: captcha.dataUrl });
+});
+
 // Config for public search dropdown
 app.get('/api/config', (req, res) => {
   try {
@@ -141,7 +153,7 @@ app.get('/api/config', (req, res) => {
   }
 });
 
-// PINFL Search with 10 req/min rate limit
+// PINFL Search with 10 req/min rate limit and math captcha verification
 app.post('/api/search', (req, res) => {
   const ip = req.ip || req.connection.remoteAddress || 'unknown';
   if (!checkRateLimit(searchRateLimit, ip, 10, 60000)) {
@@ -150,7 +162,26 @@ app.post('/api/search', (req, res) => {
     });
   }
 
-  const { pinfl, course } = req.body;
+  const { pinfl, course, captcha } = req.body;
+
+  // Validate math captcha
+  if (!req.session.captcha || Date.now() > req.session.captcha.expires) {
+    return res.status(400).json({
+      error: 'Xavfsizlik kodi muddati tugagan. Iltimos, yangilang.',
+      reloadCaptcha: true
+    });
+  }
+
+  const expectedAnswer = req.session.captcha.answer;
+  delete req.session.captcha; // Prevent reuse of the same captcha
+
+  if (captcha === undefined || captcha === null || String(captcha).trim() === '' || parseInt(String(captcha).trim(), 10) !== expectedAnswer) {
+    return res.status(400).json({
+      error: 'Xavfsizlik kodi (matematik hisob) noto‘g‘ri kiritildi. Qaytadan urinib ko‘ring.',
+      reloadCaptcha: true
+    });
+  }
+
   if (!pinfl || String(pinfl).trim().length < 4) {
     return res.status(400).json({ error: 'JSHSHIR (PINFL) raqamini to‘liq kiriting (14 ta raqam).' });
   }
