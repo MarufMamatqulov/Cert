@@ -509,7 +509,7 @@ app.get('/t/:uid', (req, res) => {
             </div>
             <div>
               <div class="info-label">Tekshirish kodi</div>
-              <div class="info-value" style="font-family: monospace; letter-spacing: 1px; color: #1e3a8a;">${cert.verify_code || cert.uid}</div>
+              <div class="info-value" style="font-family: monospace; letter-spacing: 1px; color: #1e3a8a;">Kod: ${cert.verify_code || cert.uid}</div>
             </div>
             <div>
               <div class="info-label">Berilgan sana</div>
@@ -532,7 +532,7 @@ app.get('/t/:uid', (req, res) => {
 
           <div class="footer-note">
             ${siteOrg}<br>
-            Tekshiruv kodi: <strong>${cert.verify_code || cert.uid}</strong>
+            Tekshiruv kodi: <strong>Kod: ${cert.verify_code || cert.uid}</strong>
           </div>
         </div>
       </div>

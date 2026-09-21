@@ -1849,7 +1849,7 @@
           <tr>
             <td><strong>${c.series} № ${c.cert_no}</strong></td>
             <td><strong>${c.fio}</strong></td>
-            <td style="font-family: monospace; font-weight: 600; color: #1e3a8a;">${c.verify_code || '-'}</td>
+            <td style="font-family: monospace; font-weight: 600; color: #1e3a8a;">${c.verify_code ? 'Kod: ' + c.verify_code : '-'}</td>
             <td>${c.course_title}</td>
             <td>${c.formatted_date}</td>
             <td><span class="status-tag ${c.status}">${c.status === 'active' ? 'Faol' : 'Bekor qilingan'}</span></td>
@@ -1891,7 +1891,7 @@
             <td>${(certPage - 1) * 25 + idx + 1}</td>
             <td><strong>${c.series} № ${c.cert_no}</strong></td>
             <td><strong>${c.fio}</strong></td>
-            <td style="font-family: monospace; font-weight: 600; color: #1e3a8a;">${c.verify_code || '-'}</td>
+            <td style="font-family: monospace; font-weight: 600; color: #1e3a8a;">${c.verify_code ? 'Kod: ' + c.verify_code : '-'}</td>
             <td>${c.course_title}</td>
             <td>${c.score != null ? c.score : '—'}</td>
             <td>${c.issue_date}</td>

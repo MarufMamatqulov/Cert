@@ -352,7 +352,7 @@ async function renderCustomHtml(customTpl, certData, baseUrl) {
     ${(cfg.hoursPeriod && cfg.hoursPeriod.visible !== false && hoursText) ? `<div style="${getStyle(cfg.hoursPeriod)}">${hoursText}</div>` : ''}
     ${(cfg.score && cfg.score.visible !== false && certData.score != null && certData.score !== '') ? `<div style="${getStyle(cfg.score)}">${certData.score} ball</div>` : ''}
     ${(cfg.director && cfg.director.visible !== false && certData.director) ? `<div style="${getStyle(cfg.director)}">${certData.director || ''}</div>` : ''}
-    ${(cfg.verifyCode && cfg.verifyCode.visible !== false && certData.verify_code) ? `<div style="${getStyle(cfg.verifyCode)}">${certData.verify_code}</div>` : ''}
+    ${(cfg.verifyCode && cfg.verifyCode.visible !== false && certData.verify_code) ? `<div style="${getStyle(cfg.verifyCode)}">Kod: ${certData.verify_code}</div>` : ''}
     ${(cfg.qr && cfg.qr.visible !== false) ? `<div style="${getQrStyle(cfg.qr)}"><img src="${qrDataUrl}" style="width: 100%; height: 100%; display: block;" alt="QR Code" /></div>` : ''}
   </div>
 </body>
