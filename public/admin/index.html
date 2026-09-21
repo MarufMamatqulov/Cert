@@ -6,7 +6,7 @@
   <title>Boshqaruv Paneli — SER Tizim</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Great+Vibes&family=Merriweather:ital,wght@0,400;0,700;1,400&family=Montserrat:wght@400;500;600;700;800&family=Playfair+Display:ital,wght@0,600;0,700;0,800;1,600&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=Roboto:wght@400;500;700&display=swap" rel="stylesheet">
   <style>
     :root {
       --primary: #1e3a8a;
@@ -679,6 +679,258 @@
       .sidebar { width: 100%; height: auto; position: relative; }
       .preview-container { grid-template-columns: 1fr; }
       .form-grid-2 { grid-template-columns: 1fr; }
+      .designer-layout { grid-template-columns: 1fr; }
+    }
+
+    /* Visual Certificate Designer Styles */
+    .custom-templates-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+      gap: 20px;
+      margin-top: 16px;
+    }
+
+    .custom-tpl-card {
+      background: white;
+      border: 1px solid var(--border);
+      border-radius: 14px;
+      overflow: hidden;
+      box-shadow: var(--shadow-sm);
+      transition: all 0.2s ease;
+      display: flex;
+      flex-direction: column;
+    }
+
+    .custom-tpl-card:hover {
+      box-shadow: var(--shadow);
+      transform: translateY(-2px);
+      border-color: var(--accent);
+    }
+
+    .custom-tpl-thumb {
+      height: 150px;
+      background: #0f172a;
+      background-size: contain;
+      background-position: center;
+      background-repeat: no-repeat;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      border-bottom: 1px solid var(--border);
+      position: relative;
+    }
+
+    .custom-tpl-thumb-badge {
+      position: absolute;
+      top: 10px;
+      right: 10px;
+      background: rgba(15, 23, 42, 0.85);
+      color: white;
+      font-size: 11px;
+      font-weight: 700;
+      padding: 3px 8px;
+      border-radius: 6px;
+      backdrop-filter: blur(4px);
+    }
+
+    .custom-tpl-body {
+      padding: 16px;
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+    }
+
+    .designer-modal-dialog {
+      max-width: 1280px;
+      width: 96vw;
+      height: 92vh;
+      display: flex;
+      flex-direction: column;
+      padding: 22px;
+    }
+
+    .designer-layout {
+      display: grid;
+      grid-template-columns: 380px 1fr;
+      gap: 20px;
+      flex: 1;
+      overflow: hidden;
+      margin-top: 14px;
+    }
+
+    .designer-controls {
+      overflow-y: auto;
+      padding-right: 12px;
+      display: flex;
+      flex-direction: column;
+      gap: 16px;
+    }
+
+    .designer-section {
+      background: #f8fafc;
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 14px;
+    }
+
+    .designer-section-title {
+      font-size: 13.5px;
+      font-weight: 700;
+      color: var(--text);
+      margin-bottom: 10px;
+    }
+
+    .element-selector-chips {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 6px;
+    }
+
+    .element-chip {
+      padding: 6px 10px;
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      background: white;
+      font-size: 12px;
+      font-weight: 600;
+      cursor: pointer;
+      color: var(--text);
+      transition: all 0.15s ease;
+      font-family: inherit;
+    }
+
+    .element-chip:hover {
+      border-color: var(--accent);
+      background: #eff6ff;
+    }
+
+    .element-chip.active {
+      background: var(--primary);
+      color: white;
+      border-color: var(--primary);
+    }
+
+    .btn-group-toggle {
+      display: flex;
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      overflow: hidden;
+    }
+
+    .btn-toggle {
+      flex: 1;
+      padding: 7px 10px;
+      border: none;
+      background: white;
+      font-size: 12px;
+      font-weight: 600;
+      cursor: pointer;
+      color: var(--text);
+      transition: background 0.15s;
+    }
+
+    .btn-toggle.active {
+      background: var(--primary);
+      color: white;
+    }
+
+    .designer-canvas-container {
+      background: #0f172a;
+      border-radius: 14px;
+      padding: 16px;
+      display: flex;
+      flex-direction: column;
+      overflow: hidden;
+      box-shadow: inset 0 2px 8px rgba(0,0,0,0.4);
+    }
+
+    .canvas-header-info {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      color: #94a3b8;
+      font-size: 12px;
+      margin-bottom: 12px;
+    }
+
+    .canvas-viewport {
+      flex: 1;
+      overflow: auto;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 12px;
+    }
+
+    .interactive-canvas {
+      position: relative;
+      background: white;
+      background-size: 100% 100%;
+      background-position: center;
+      background-repeat: no-repeat;
+      box-shadow: 0 15px 35px rgba(0, 0, 0, 0.7);
+      user-select: none;
+      overflow: hidden;
+      border-radius: 4px;
+      transition: width 0.2s ease, height 0.2s ease;
+    }
+
+    .interactive-canvas.landscape {
+      width: 760px;
+      height: 537px;
+    }
+
+    .interactive-canvas.portrait {
+      width: 460px;
+      height: 651px;
+    }
+
+    .canvas-draggable-el {
+      position: absolute;
+      transform: translate(-50%, -50%);
+      cursor: grab;
+      user-select: none;
+      border: 1.5px dashed rgba(37, 99, 235, 0.5);
+      padding: 2px 6px;
+      border-radius: 4px;
+      z-index: 10;
+      white-space: nowrap;
+      transition: border-color 0.1s, box-shadow 0.1s;
+    }
+
+    .canvas-draggable-el:hover {
+      border-color: #2563eb;
+      background: rgba(37, 99, 235, 0.08);
+    }
+
+    .canvas-draggable-el.active {
+      border: 2px solid #2563eb;
+      background: rgba(37, 99, 235, 0.15);
+      box-shadow: 0 0 0 4px rgba(37, 99, 235, 0.3);
+      cursor: grabbing;
+      z-index: 20;
+    }
+
+    .canvas-el-tag {
+      position: absolute;
+      bottom: calc(100% + 4px);
+      left: 50%;
+      transform: translateX(-50%);
+      background: #1e3a8a;
+      color: white;
+      font-size: 10px;
+      font-weight: 700;
+      padding: 2px 6px;
+      border-radius: 4px;
+      pointer-events: none;
+      white-space: nowrap;
+      display: none;
+    }
+
+    .canvas-draggable-el.active .canvas-el-tag,
+    .canvas-draggable-el:hover .canvas-el-tag {
+      display: block;
     }
   </style>
 </head>
@@ -686,11 +938,9 @@
 
   <!-- Sidebar -->
   <aside class="sidebar">
-    <div class="sidebar-brand">
-      <div class="brand-icon">SER</div>
-      <div>
-        <div class="brand-title">Admin Panel</div>
-        <div class="brand-sub">Sertifikat boshqaruvi</div>
+    <div class="sidebar-brand" style="padding: 16px;">
+      <div style="background: rgba(255, 255, 255, 0.95); border-radius: 10px; padding: 6px 12px; display: inline-flex; align-items: center; justify-content: center; width: 100%; box-shadow: 0 2px 8px rgba(0,0,0,0.15);">
+        <img src="/RTRM%20logo%20eng.png" alt="Digital Education Development Center" style="max-height: 32px; width: auto; object-fit: contain;">
       </div>
     </div>
 
@@ -895,6 +1145,26 @@
             </table>
           </div>
         </div>
+
+        <!-- Part 2: Custom Design Templates (Visual Designer) -->
+        <div class="panel-card" style="margin-top: 24px;">
+          <div class="panel-header">
+            <div>
+              <h3 class="panel-title">Maxsus dizayn shablonlari (Vizual Konstruktor)</h3>
+              <p style="font-size: 13px; color: #64748b; margin-top: 2px;">
+                O‘zingizning PNG yoki JPG blankangizni yuklab, F.I.O, QR-kod va boshqa yozuvlarni aynan kerakli nuqtalarga joylashtiring
+              </p>
+            </div>
+            <button class="btn btn-primary" onclick="openDesignerModal()" style="background: linear-gradient(135deg, #059669 0%, #10b981 100%);">
+              <svg width="16" height="16" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"/></svg>
+              + Yangi shablon yaratish (Blanka yuklash)
+            </button>
+          </div>
+
+          <div id="customTemplatesGrid" class="custom-templates-grid">
+            <div style="text-align: center; padding: 30px; color: #94a3b8;">Yuklanmoqda...</div>
+          </div>
+        </div>
       </section>
 
       <!-- 4. EXCEL IMPORT TAB -->
@@ -1039,21 +1309,34 @@
           </div>
         </div>
 
-        <div class="form-grid-2">
-          <div class="form-control-group">
-            <label class="form-label" for="certNo">Sertifikat raqami:</label>
-            <input type="text" id="certNo" class="form-input" placeholder="Bo‘sh qolsa avtomatik (000001)">
+        <div style="display: grid; grid-template-columns: 110px 1fr 1fr; gap: 12px; margin-bottom: 14px;">
+          <div class="form-control-group" style="margin-bottom: 0;">
+            <label class="form-label" for="certSeries">Seriya: *</label>
+            <input type="text" id="certSeries" class="form-input" placeholder="MO" maxlength="10" style="font-weight: 700; text-transform: uppercase; letter-spacing: 0.5px;" title="Sertifikat seriyasi (faqat harflar, masalan: MO, IT, SER)" required>
           </div>
-          <div class="form-control-group">
-            <label class="form-label" for="certRegNo">Qayd raqami:</label>
-            <input type="text" id="certRegNo" class="form-input" placeholder="Masalan: 3153">
+          <div class="form-control-group" style="margin-bottom: 0;">
+            <div style="display: flex; justify-content: space-between; align-items: center;">
+              <label class="form-label" for="certNo" style="margin-bottom: 4px;">Sertifikat №: *</label>
+              <button type="button" onclick="refreshCertNextNumbers()" style="background: none; border: none; color: #2563eb; font-size: 11px; cursor: pointer; text-decoration: underline; padding: 0;">🔄 Yangilash</button>
+            </div>
+            <div style="position: relative;">
+              <input type="text" id="certNo" class="form-input" placeholder="000001" style="font-family: monospace; font-weight: 600;" required>
+              <span style="position: absolute; right: 8px; top: 50%; transform: translateY(-50%); font-size: 11px; background: #e2e8f0; padding: 2px 6px; border-radius: 4px; color: #475569; pointer-events: none;">Avto</span>
+            </div>
+          </div>
+          <div class="form-control-group" style="margin-bottom: 0;">
+            <label class="form-label" for="certRegNo">Qayd raqami: *</label>
+            <div style="position: relative;">
+              <input type="text" id="certRegNo" class="form-input" placeholder="1001" style="font-family: monospace; font-weight: 600;" required>
+              <span style="position: absolute; right: 8px; top: 50%; transform: translateY(-50%); font-size: 11px; background: #e2e8f0; padding: 2px 6px; border-radius: 4px; color: #475569; pointer-events: none;">Avto</span>
+            </div>
           </div>
         </div>
 
         <div class="form-grid-2">
           <div class="form-control-group">
-            <label class="form-label" for="certScore">To‘plangan ball:</label>
-            <input type="number" step="0.1" id="certScore" class="form-input" placeholder="Masalan: 88.5">
+            <label class="form-label" for="certScore">To‘plangan ball (ixtiyoriy):</label>
+            <input type="number" step="0.1" id="certScore" class="form-input" placeholder="Masalan: 88.5 (yoki bo‘sh qoldiring)">
           </div>
           <div class="form-control-group">
             <label class="form-label" for="certDate">Berilgan sana: *</label>
@@ -1217,6 +1500,180 @@
           <button type="submit" class="btn btn-primary" id="btnSaveCourse">Kursni saqlash</button>
         </div>
       </form>
+    </div>
+  </div>
+
+  <!-- MODAL: VISUAL CERTIFICATE DESIGNER -->
+  <div id="designerModal" class="modal-backdrop">
+    <div class="modal-dialog designer-modal-dialog">
+      <div class="modal-header">
+        <div>
+          <h3 class="modal-title" id="designerModalTitle">Vizual Sertifikat Konstruktori</h3>
+          <p style="font-size: 12.5px; color: #64748b; margin-top: 2px;">Blanka rasmini tanlang, elementlarni sichqoncha bilan suring va shriftlarini sozlang</p>
+        </div>
+        <button class="btn-close" onclick="closeDesignerModal()">&times;</button>
+      </div>
+
+      <div class="designer-layout">
+        <!-- Left Column: Controls -->
+        <div class="designer-controls">
+          <!-- Step 1: Blanka & Format -->
+          <div class="designer-section">
+            <h4 class="designer-section-title">1. Blanka va format</h4>
+            <div class="form-control-group">
+              <label class="form-label">Shablon nomi: *</label>
+              <input type="text" id="dtplName" class="form-input" placeholder="Masalan: Maxsus IT Diplom 2026" required>
+            </div>
+            <div class="form-grid-2">
+              <div class="form-control-group">
+                <label class="form-label">Format (Oriyentatsiya):</label>
+                <select id="dtplOrientation" class="form-select" onchange="changeDesignerOrientation(this.value)">
+                  <option value="landscape">Albom (Gorizontal A4)</option>
+                  <option value="portrait">Kitobcha (Vertikal A4)</option>
+                </select>
+              </div>
+              <div class="form-control-group">
+                <label class="form-label">Blanka rasmi (PNG/JPG):</label>
+                <input type="file" id="dtplBgFile" class="form-input" accept=".png, .jpg, .jpeg" onchange="handleDesignerBgUpload(event)">
+              </div>
+            </div>
+          </div>
+
+          <!-- Step 2: Element selection & tabs -->
+          <div class="designer-section">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px;">
+              <h4 class="designer-section-title" style="margin: 0;">2. Elementni tanlang</h4>
+              <span id="activeElementBadge" class="tpl-badge" style="background: #2563eb; color: white;">F.I.Sh. tanlangan</span>
+            </div>
+            
+            <div class="element-selector-chips" id="elementSelectorChips">
+              <button type="button" class="element-chip active" data-el="fio" onclick="selectCanvasElement('fio')">👤 F.I.Sh.</button>
+              <button type="button" class="element-chip" data-el="qr" onclick="selectCanvasElement('qr')">📱 QR-kod</button>
+              <button type="button" class="element-chip" data-el="certNo" onclick="selectCanvasElement('certNo')">🔢 Seriya №</button>
+              <button type="button" class="element-chip" data-el="regNo" onclick="selectCanvasElement('regNo')">🏷️ Qayd №</button>
+              <button type="button" class="element-chip" data-el="courseTitle" onclick="selectCanvasElement('courseTitle')">📚 Kurs nomi</button>
+              <button type="button" class="element-chip" data-el="bodyText" onclick="selectCanvasElement('bodyText')">📝 Asosiy matn</button>
+              <button type="button" class="element-chip" data-el="score" onclick="selectCanvasElement('score')">🏆 Ball</button>
+              <button type="button" class="element-chip" data-el="issueDate" onclick="selectCanvasElement('issueDate')">📅 Sana</button>
+              <button type="button" class="element-chip" data-el="director" onclick="selectCanvasElement('director')">✍️ Rahbar</button>
+              <button type="button" class="element-chip" data-el="orgLine1" onclick="selectCanvasElement('orgLine1')">🏛️ Vazirlik</button>
+              <button type="button" class="element-chip" data-el="orgLine2" onclick="selectCanvasElement('orgLine2')">🏢 Muassasa</button>
+              <button type="button" class="element-chip" data-el="hoursPeriod" onclick="selectCanvasElement('hoursPeriod')">⏱️ Soat / Davr</button>
+            </div>
+          </div>
+
+          <!-- Step 3: Selected Element Style Settings -->
+          <div class="designer-section" id="elementSettingsPanel">
+            <h4 class="designer-section-title">3. Shrift va dizayn sozlamalari</h4>
+
+            <!-- Prominent Visibility Box -->
+            <div id="elementVisibilityBox" style="margin-bottom: 12px;"></div>
+            <input type="checkbox" id="elVisible" style="display: none;" onchange="updateActiveElementFromInputs()">
+
+            <div id="textSettingsGroup">
+              <div class="form-control-group">
+                <label class="form-label">Shrift turi:</label>
+                <select id="elFontFamily" class="form-select" onchange="updateActiveElementFromInputs()">
+                  <option value="Playfair Display">Playfair Display (Klassik nufuzli)</option>
+                  <option value="Great Vibes">Great Vibes (Husnixat / Kalligrafiya)</option>
+                  <option value="Montserrat">Montserrat (Zamonaviy geometrik)</option>
+                  <option value="Plus Jakarta Sans">Plus Jakarta Sans (Rasmiy aniq)</option>
+                  <option value="Merriweather">Merriweather (Kitobiy serif)</option>
+                  <option value="Roboto">Roboto (Neytral oddiy)</option>
+                </select>
+              </div>
+
+              <div class="form-grid-2">
+                <div class="form-control-group">
+                  <label class="form-label">Shrift o‘lchami (<span id="elFontSizeVal">28</span>px):</label>
+                  <input type="range" id="elFontSize" min="10" max="72" value="28" class="form-range" oninput="updateActiveElementFromInputs()">
+                </div>
+                <div class="form-control-group">
+                  <label class="form-label">Matn rangi:</label>
+                  <div style="display: flex; gap: 8px; align-items: center;">
+                    <input type="color" id="elColorPicker" value="#0f172a" style="width: 42px; height: 36px; padding: 2px; border: 1px solid #cbd5e1; border-radius: 8px; cursor: pointer;" oninput="syncColorFromPicker(this.value)">
+                    <input type="text" id="elColor" class="form-input" value="#0f172a" oninput="syncColorFromText(this.value)">
+                  </div>
+                </div>
+              </div>
+
+              <div class="form-grid-2">
+                <div class="form-control-group">
+                  <label class="form-label">Matn tekislanishi:</label>
+                  <div class="btn-group-toggle">
+                    <button type="button" class="btn-toggle" id="btnAlignLeft" onclick="setElementAlign('left')">Chap</button>
+                    <button type="button" class="btn-toggle active" id="btnAlignCenter" onclick="setElementAlign('center')">O‘rta</button>
+                    <button type="button" class="btn-toggle" id="btnAlignRight" onclick="setElementAlign('right')">O‘ng</button>
+                  </div>
+                </div>
+                <div class="form-control-group">
+                  <label class="form-label">Qalinlik:</label>
+                  <label style="display: flex; align-items: center; gap: 6px; margin-top: 8px; cursor: pointer; font-size: 13.5px;">
+                    <input type="checkbox" id="elBold" onchange="updateActiveElementFromInputs()" checked> Qalin (Bold)
+                  </label>
+                </div>
+              </div>
+            </div>
+
+            <!-- QR settings group -->
+            <div id="qrSettingsGroup" style="display: none;">
+              <div class="form-control-group">
+                <label class="form-label">QR-kod o‘lchami (<span id="elQrSizeVal">90</span>px):</label>
+                <input type="range" id="elQrSize" min="50" max="220" value="90" class="form-range" oninput="updateActiveElementFromInputs()">
+              </div>
+              <div class="form-control-group">
+                <label style="display: flex; align-items: center; gap: 8px; cursor: pointer; font-size: 13.5px;">
+                  <input type="checkbox" id="elQrBg" onchange="updateActiveElementFromInputs()"> Oq hoshiyali fon qo‘shish
+                </label>
+              </div>
+            </div>
+
+            <!-- Position sliders -->
+            <div style="background: #f1f5f9; border-radius: 10px; padding: 12px; margin-top: 12px;">
+              <div style="font-size: 12px; font-weight: 700; color: #475569; margin-bottom: 8px;">Aniq koordinatalar (Slayder yoki Sichqoncha orqali):</div>
+              <div class="form-control-group" style="margin-bottom: 8px;">
+                <div style="display: flex; justify-content: space-between; font-size: 12px;">
+                  <span>Gorizontal (X o‘qi):</span>
+                  <strong><span id="elPosXVal">50</span>%</strong>
+                </div>
+                <input type="range" id="elPosX" min="0" max="100" step="0.5" value="50" class="form-range" oninput="updateActiveElementFromInputs()">
+              </div>
+              <div class="form-control-group" style="margin-bottom: 0;">
+                <div style="display: flex; justify-content: space-between; font-size: 12px;">
+                  <span>Vertikal (Y o‘qi):</span>
+                  <strong><span id="elPosYVal">50</span>%</strong>
+                </div>
+                <input type="range" id="elPosY" min="0" max="100" step="0.5" value="50" class="form-range" oninput="updateActiveElementFromInputs()">
+              </div>
+            </div>
+          </div>
+
+          <!-- Bottom Action Buttons -->
+          <div style="display: flex; flex-direction: column; gap: 10px; margin-top: auto; padding-top: 16px;">
+            <button type="button" class="btn btn-secondary" id="btnPreviewTestPdf" onclick="downloadDesignerPdfPreview()" style="display: flex; align-items: center; justify-content: center; gap: 8px;">
+              <svg width="16" height="16" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/></svg>
+              <span>PDF Sinov yuklab olish</span>
+            </button>
+            <button type="button" class="btn btn-primary" id="btnSaveDesignerTemplate" onclick="saveDesignerTemplate()" style="padding: 12px; font-weight: 700;">
+              ✓ Shablonni saqlash
+            </button>
+          </div>
+        </div>
+
+        <!-- Right Column: Interactive Canvas -->
+        <div class="designer-canvas-container">
+          <div class="canvas-header-info">
+            <span>🖱️ Elementlarni sichqoncha bilan ushlab, to‘g‘ridan-to‘g‘ri blanka ustida surishingiz mumkin</span>
+            <span id="canvasFormatInfo" class="tpl-badge">Albom A4 (297 × 210 mm)</span>
+          </div>
+
+          <div class="canvas-viewport">
+            <div id="designerCanvas" class="interactive-canvas landscape">
+              <!-- Elements will be rendered here dynamically -->
+            </div>
+          </div>
+        </div>
+      </div>
     </div>
   </div>
 
@@ -1478,24 +1935,60 @@
     }
 
     // Cert Modal
-    function openCertModal(cert = null) {
+    async function refreshCertNextNumbers(courseId = null) {
+      const cId = courseId || document.getElementById('certCourseId').value;
+      if (!cId) return;
+      try {
+        const res = await fetch(`/admin/api/courses/${cId}/next-numbers`);
+        if (res.ok) {
+          const data = await res.json();
+          const seriesInput = document.getElementById('certSeries');
+          const noInput = document.getElementById('certNo');
+          const regInput = document.getElementById('certRegNo');
+          const dateInput = document.getElementById('certDate');
+
+          if (seriesInput) seriesInput.value = data.series || 'MO';
+          if (noInput) noInput.value = data.next_cert_no || '000001';
+          if (regInput) regInput.value = data.next_reg_no || '1001';
+          if (dateInput && !dateInput.value) dateInput.value = data.issue_date || new Date().toISOString().split('T')[0];
+        }
+      } catch (err) {
+        console.error('Error fetching next numbers:', err);
+      }
+    }
+
+    async function openCertModal(cert = null) {
       document.getElementById('certEditId').value = cert ? cert.id : '';
       document.getElementById('certModalTitle').textContent = cert ? 'Sertifikatni tahrirlash' : 'Yangi sertifikat berish';
 
-      document.getElementById('certCourseId').value = cert ? cert.course_id : (coursesList[0] ? coursesList[0].id : '');
+      const selectedCourseId = cert ? cert.course_id : (coursesList[0] ? coursesList[0].id : '');
+      document.getElementById('certCourseId').value = selectedCourseId;
       document.getElementById('certFio').value = cert ? cert.fio : '';
       document.getElementById('certPinfl').value = cert ? cert.pinfl : '';
       document.getElementById('certPassport').value = cert ? (cert.passport || '') : '';
-      document.getElementById('certNo').value = cert ? cert.cert_no : '';
-      document.getElementById('certRegNo').value = cert ? cert.reg_no : '';
       document.getElementById('certScore').value = cert && cert.score != null ? cert.score : '';
       document.getElementById('certDate').value = cert ? cert.issue_date : new Date().toISOString().split('T')[0];
       document.getElementById('certTemplate').value = cert ? (cert.template || '') : '';
       document.getElementById('certStatus').value = cert ? cert.status : 'active';
       document.getElementById('certNote').value = cert ? (cert.note || '') : '';
 
+      if (cert) {
+        document.getElementById('certSeries').value = cert.series || 'MO';
+        document.getElementById('certNo').value = cert.cert_no || '';
+        document.getElementById('certRegNo').value = cert.reg_no || '';
+      } else {
+        await refreshCertNextNumbers(selectedCourseId);
+      }
+
       document.getElementById('certModal').classList.add('active');
     }
+
+    document.getElementById('certCourseId').addEventListener('change', (e) => {
+      const isEditing = Boolean(document.getElementById('certEditId').value);
+      if (!isEditing) {
+        refreshCertNextNumbers(e.target.value);
+      }
+    });
 
     function closeCertModal() {
       document.getElementById('certModal').classList.remove('active');
@@ -1532,6 +2025,7 @@
         fio: document.getElementById('certFio').value.trim(),
         pinfl: document.getElementById('certPinfl').value.replace(/\D/g, '').trim(),
         passport: document.getElementById('certPassport').value.trim(),
+        series: document.getElementById('certSeries').value.trim().toUpperCase(),
         cert_no: document.getElementById('certNo').value.trim(),
         reg_no: document.getElementById('certRegNo').value.trim(),
         score: document.getElementById('certScore').value,
@@ -1978,6 +2472,826 @@
         showToast('Server xatosi', 'error');
       }
     });
+
+    // ==========================================
+    // VISUAL CERTIFICATE DESIGNER LOGIC
+    // ==========================================
+
+    const DEFAULT_ELEMENTS_CONFIG = {
+      fio: {
+        label: 'F.I.Sh.',
+        x: 50,
+        y: 46,
+        fontSize: 28,
+        fontFamily: 'Playfair Display',
+        fontWeight: 'bold',
+        color: '#0f172a',
+        textAlign: 'center',
+        width: 80,
+        visible: true,
+        sample: 'ALISHER NAVOIY G‘IYOSIDDIN O‘G‘LI'
+      },
+      qr: {
+        label: 'QR-kod',
+        x: 12,
+        y: 82,
+        size: 90,
+        visible: true,
+        bg: false
+      },
+      certNo: {
+        label: 'Seriya va Raqam',
+        x: 88,
+        y: 80,
+        fontSize: 14,
+        fontFamily: 'Plus Jakarta Sans',
+        fontWeight: 'bold',
+        color: '#0f172a',
+        textAlign: 'right',
+        visible: true,
+        sample: 'MO № 000123'
+      },
+      issueDate: {
+        label: 'Berilgan sana',
+        x: 88,
+        y: 85,
+        fontSize: 13,
+        fontFamily: 'Plus Jakarta Sans',
+        fontWeight: '500',
+        color: '#64748b',
+        textAlign: 'right',
+        visible: true,
+        sample: '2026-yil 21-mart'
+      },
+      regNo: {
+        label: 'Qayd raqami',
+        x: 88,
+        y: 90,
+        fontSize: 13,
+        fontFamily: 'Plus Jakarta Sans',
+        fontWeight: '500',
+        color: '#64748b',
+        textAlign: 'right',
+        visible: true,
+        sample: 'Qayd № 1001'
+      },
+      courseTitle: {
+        label: 'Kurs nomi',
+        x: 50,
+        y: 56,
+        fontSize: 18,
+        fontFamily: 'Plus Jakarta Sans',
+        fontWeight: 'bold',
+        color: '#1e3a8a',
+        textAlign: 'center',
+        width: 80,
+        visible: true,
+        sample: '«Zamonaviy axborot texnologiyalari va raqamli ta‘lim»'
+      },
+      bodyText: {
+        label: 'Asosiy matn',
+        x: 50,
+        y: 64,
+        fontSize: 13,
+        fontFamily: 'Plus Jakarta Sans',
+        fontWeight: 'normal',
+        color: '#475569',
+        textAlign: 'center',
+        width: 75,
+        visible: true,
+        sample: 'kursi bo‘yicha malakasini oshirganligi tasdiqlanadi.'
+      },
+      score: {
+        label: 'To‘plangan ball',
+        x: 50,
+        y: 72,
+        fontSize: 14,
+        fontFamily: 'Plus Jakarta Sans',
+        fontWeight: 'bold',
+        color: '#16a34a',
+        textAlign: 'center',
+        visible: false,
+        sample: 'Natija: 95 ball'
+      },
+      director: {
+        label: 'Rahbar imzosi',
+        x: 50,
+        y: 84,
+        fontSize: 14,
+        fontFamily: 'Great Vibes',
+        fontWeight: 'bold',
+        color: '#0f172a',
+        textAlign: 'center',
+        visible: false,
+        sample: 'Markaz rahbari: I.M. Azimov'
+      },
+      orgLine1: {
+        label: 'Vazirlik nomi',
+        x: 50,
+        y: 18,
+        fontSize: 13,
+        fontFamily: 'Plus Jakarta Sans',
+        fontWeight: 'bold',
+        color: '#1e3a8a',
+        textAlign: 'center',
+        width: 85,
+        visible: false,
+        sample: 'O‘ZBEKISTON RESPUBLIKASI OLIY TA‘LIM VAZIRLIGI'
+      },
+      orgLine2: {
+        label: 'Muassasa nomi',
+        x: 50,
+        y: 24,
+        fontSize: 14,
+        fontFamily: 'Plus Jakarta Sans',
+        fontWeight: 'bold',
+        color: '#0f172a',
+        textAlign: 'center',
+        width: 85,
+        visible: false,
+        sample: 'MALAKA OSHIRISH VA QAYTA TAYYORLASH MARKAZI'
+      },
+      hoursPeriod: {
+        label: 'O‘quv soati / davri',
+        x: 50,
+        y: 76,
+        fontSize: 12,
+        fontFamily: 'Plus Jakarta Sans',
+        fontWeight: 'normal',
+        color: '#64748b',
+        textAlign: 'center',
+        visible: false,
+        sample: '144 akademik soat'
+      }
+    };
+
+    let customTemplatesList = [];
+    let currentDesignerTplId = null;
+    let designerElementsConfig = JSON.parse(JSON.stringify(DEFAULT_ELEMENTS_CONFIG));
+    let activeDesignerElement = 'fio';
+    let designerBgDataUrl = null;
+    let designerExistingBg = '';
+    let isCanvasDragging = false;
+    let currentDragElKey = null;
+
+    async function loadCustomTemplates() {
+      try {
+        const res = await fetch('/admin/api/custom-templates');
+        if (res.ok) {
+          customTemplatesList = await res.json();
+          renderCustomTemplatesGrid();
+          updateCourseTemplateSelectors();
+        }
+      } catch (err) {
+        console.error('Load custom templates error:', err);
+      }
+    }
+
+    function renderCustomTemplatesGrid() {
+      const grid = document.getElementById('customTemplatesGrid');
+      if (!grid) return;
+
+      if (!customTemplatesList || customTemplatesList.length === 0) {
+        grid.innerHTML = `
+          <div style="grid-column: 1 / -1; text-align: center; padding: 36px 20px; background: #f8fafc; border: 1.5px dashed #cbd5e1; border-radius: 14px;">
+            <div style="font-size: 32px; margin-bottom: 10px;">🎨</div>
+            <h4 style="font-size: 15px; font-weight: 700; color: #0f172a; margin-bottom: 6px;">Hozircha maxsus shablonlar yaratilmagan</h4>
+            <p style="font-size: 13px; color: #64748b; max-width: 440px; margin: 0 auto 16px auto;">
+              Canva yoki Photoshop-da tayyorlangan o‘z blankangizni yuklang va elementlarni xohlagan joyingizga qo‘ying.
+            </p>
+            <button class="btn btn-primary btn-sm" onclick="openDesignerModal()">+ Yangi shablon yaratish</button>
+          </div>
+        `;
+        return;
+      }
+
+      grid.innerHTML = customTemplatesList.map(t => {
+        const isLandscape = t.orientation !== 'portrait';
+        const bgUrl = t.bg_image ? `/uploads/${t.bg_image}` : '';
+        const createdDate = t.created_at ? t.created_at.split(' ')[0] : '';
+
+        return `
+          <div class="custom-tpl-card">
+            <div class="custom-tpl-thumb" style="${bgUrl ? `background-image: url('${bgUrl}');` : ''}">
+              <span class="custom-tpl-thumb-badge">${isLandscape ? 'Albom A4' : 'Kitobcha A4'}</span>
+              ${!bgUrl ? '<div class="custom-tpl-thumb-placeholder">📄</div>' : ''}
+            </div>
+            <div class="custom-tpl-body">
+              <div>
+                <strong style="font-size: 15px; color: #0f172a; display: block;">${t.name}</strong>
+                <span style="font-size: 12px; color: #64748b;">Yaratilgan: ${createdDate}</span>
+              </div>
+              <div style="display: flex; gap: 8px; margin-top: auto; padding-top: 8px; border-top: 1px solid #f1f5f9;">
+                <button class="btn btn-secondary btn-sm" style="flex: 1;" onclick="editCustomTemplate(${t.id})">
+                  ✏️ Tahrirlash
+                </button>
+                <button class="btn btn-secondary btn-sm" title="PDF Sinov yuklab olish" onclick="testDownloadCustomTplPdf(${t.id})">
+                  📥 PDF
+                </button>
+                <button class="btn btn-danger btn-sm" title="O‘chirish" onclick="deleteCustomTemplate(${t.id})">
+                  🗑️
+                </button>
+              </div>
+            </div>
+          </div>
+        `;
+      }).join('');
+    }
+
+    function updateCourseTemplateSelectors() {
+      // 1. In Course Modal Template Grid
+      const grid = document.getElementById('templateSelectorGrid') || document.querySelector('.template-selector-grid');
+      if (grid) {
+        let html = `
+          <div class="tpl-card selected" data-tpl="davlat" onclick="selectTemplate('davlat')">
+            <strong style="font-size: 13.5px;">Davlat uslubi</strong>
+            <div class="tpl-badge">Vertikal A4</div>
+          </div>
+          <div class="tpl-card" data-tpl="zamonaviy" onclick="selectTemplate('zamonaviy')">
+            <strong style="font-size: 13.5px;">Zamonaviy</strong>
+            <div class="tpl-badge">Vertikal A4</div>
+          </div>
+          <div class="tpl-card" data-tpl="korporativ" onclick="selectTemplate('korporativ')">
+            <strong style="font-size: 13.5px;">Korporativ ko‘k</strong>
+            <div class="tpl-badge">Vertikal A4</div>
+          </div>
+          <div class="tpl-card" data-tpl="diplom" onclick="selectTemplate('diplom')">
+            <strong style="font-size: 13.5px;">Klassik diplom</strong>
+            <div class="tpl-badge">Albom A4</div>
+          </div>
+        `;
+
+        if (customTemplatesList && customTemplatesList.length > 0) {
+          customTemplatesList.forEach(ct => {
+            const isL = ct.orientation !== 'portrait';
+            html += `
+              <div class="tpl-card" data-tpl="custom:${ct.id}" onclick="selectTemplate('custom:${ct.id}')" style="border-left: 4px solid #10b981;">
+                <strong style="font-size: 13.5px;">${ct.name}</strong>
+                <div class="tpl-badge" style="background: #d1fae5; color: #065f46;">${isL ? 'Albom' : 'Kitobcha'} (Maxsus)</div>
+              </div>
+            `;
+          });
+        }
+        grid.innerHTML = html;
+      }
+
+      // 2. In Certificate Modal Template Dropdown
+      const certTplSelect = document.getElementById('certTemplate');
+      if (certTplSelect) {
+        let optionsHtml = `
+          <option value="">Kurs bo‘yicha standart</option>
+          <optgroup label="Standart shablonlar">
+            <option value="davlat">Davlat namunasi (vertikal)</option>
+            <option value="zamonaviy">Zamonaviy minimal (vertikal)</option>
+            <option value="korporativ">Korporativ ko‘k (vertikal)</option>
+            <option value="diplom">Klassik diplom (gorizontal)</option>
+          </optgroup>
+        `;
+
+        if (customTemplatesList && customTemplatesList.length > 0) {
+          optionsHtml += `<optgroup label="Maxsus shablonlar (Konstruktor)">`;
+          customTemplatesList.forEach(ct => {
+            optionsHtml += `<option value="custom:${ct.id}">${ct.name} (${ct.orientation === 'portrait' ? 'Kitobcha' : 'Albom'})</option>`;
+          });
+          optionsHtml += `</optgroup>`;
+        }
+        certTplSelect.innerHTML = optionsHtml;
+      }
+    }
+
+    function openDesignerModal(template = null) {
+      currentDesignerTplId = template ? template.id : null;
+      document.getElementById('designerModalTitle').textContent = template 
+        ? `Shablonni tahrirlash: ${template.name}` 
+        : 'Yangi maxsus shablon yaratish (Vizual Konstruktor)';
+
+      document.getElementById('dtplName').value = template ? template.name : '';
+      document.getElementById('dtplOrientation').value = template ? template.orientation : 'landscape';
+      document.getElementById('dtplBgFile').value = '';
+
+      if (template) {
+        designerExistingBg = template.bg_image || '';
+        designerBgDataUrl = template.bg_image ? `/uploads/${template.bg_image}` : null;
+        designerElementsConfig = template.parsedConfig || JSON.parse(JSON.stringify(DEFAULT_ELEMENTS_CONFIG));
+      } else {
+        designerExistingBg = '';
+        designerBgDataUrl = null;
+        designerElementsConfig = JSON.parse(JSON.stringify(DEFAULT_ELEMENTS_CONFIG));
+      }
+
+      changeDesignerOrientation(document.getElementById('dtplOrientation').value, false);
+      selectCanvasElement('fio');
+      renderCanvasElements();
+      initCanvasDragListeners();
+
+      document.getElementById('designerModal').classList.add('active');
+    }
+
+    function closeDesignerModal() {
+      document.getElementById('designerModal').classList.remove('active');
+    }
+
+    function editCustomTemplate(id) {
+      const t = customTemplatesList.find(item => item.id === id);
+      if (t) openDesignerModal(t);
+    }
+
+    function changeDesignerOrientation(orientation, render = true) {
+      const canvas = document.getElementById('designerCanvas');
+      const info = document.getElementById('canvasFormatInfo');
+      if (orientation === 'portrait') {
+        canvas.className = 'interactive-canvas portrait';
+        info.textContent = 'Kitobcha A4 (210 × 297 mm)';
+      } else {
+        canvas.className = 'interactive-canvas landscape';
+        info.textContent = 'Albom A4 (297 × 210 mm)';
+      }
+      if (render) renderCanvasElements();
+    }
+
+    function handleDesignerBgUpload(e) {
+      const file = e.target.files[0];
+      if (!file) return;
+
+      const reader = new FileReader();
+      reader.onload = (event) => {
+        designerBgDataUrl = event.target.result;
+        renderCanvasElements();
+      };
+      reader.readAsDataURL(file);
+    }
+
+    function updateChipsStatusUI() {
+      document.querySelectorAll('.element-chip').forEach(c => {
+        const elKey = c.getAttribute('data-el');
+        const cfg = designerElementsConfig[elKey] || DEFAULT_ELEMENTS_CONFIG[elKey] || {};
+        const isVisible = cfg.visible !== false;
+        
+        if (isVisible) {
+          c.style.opacity = '1';
+          c.title = `${cfg.label || elKey}: Sertifikatda ko‘rinadi`;
+        } else {
+          c.style.opacity = '0.5';
+          c.title = `${cfg.label || elKey}: Olib tashlangan (yashirilgan)`;
+        }
+      });
+    }
+
+    function updateVisibilityUI() {
+      const box = document.getElementById('elementVisibilityBox');
+      if (!box) return;
+      const key = activeDesignerElement;
+      const cfg = designerElementsConfig[key] || DEFAULT_ELEMENTS_CONFIG[key] || {};
+      const isVisible = cfg.visible !== false;
+
+      if (isVisible) {
+        box.innerHTML = `
+          <div style="display: flex; align-items: center; justify-content: space-between; background: #ecfdf5; border: 1.5px solid #a7f3d0; padding: 10px 14px; border-radius: 10px; transition: all 0.2s;">
+            <div style="display: flex; align-items: center; gap: 8px;">
+              <span style="display: inline-block; width: 10px; height: 10px; border-radius: 50%; background: #10b981;"></span>
+              <div>
+                <strong style="font-size: 13px; color: #065f46; display: block;">Sertifikatda KO‘RINADI</strong>
+                <span style="font-size: 11px; color: #047857;">Ushbu element sertifikatda chop etiladi</span>
+              </div>
+            </div>
+            <button type="button" onclick="toggleActiveElementVisibility(false)" style="background: #fee2e2; color: #dc2626; border: 1px solid #fca5a5; padding: 6px 12px; font-size: 12px; font-weight: 700; border-radius: 6px; cursor: pointer; display: flex; align-items: center; gap: 4px;">
+              <span>🗑</span> Olib tashlash
+            </button>
+          </div>
+        `;
+      } else {
+        box.innerHTML = `
+          <div style="display: flex; align-items: center; justify-content: space-between; background: #fef2f2; border: 1.5px dashed #fca5a5; padding: 10px 14px; border-radius: 10px; transition: all 0.2s;">
+            <div style="display: flex; align-items: center; gap: 8px;">
+              <span style="display: inline-block; width: 10px; height: 10px; border-radius: 50%; background: #ef4444;"></span>
+              <div>
+                <strong style="font-size: 13px; color: #991b1b; display: block;">Sertifikatdan OLIB TASHLANGAN</strong>
+                <span style="font-size: 11px; color: #b91c1c;">Blanka ustiga bu yozuv tushirilmaydi</span>
+              </div>
+            </div>
+            <button type="button" onclick="toggleActiveElementVisibility(true)" style="background: #2563eb; color: white; border: none; padding: 6px 14px; font-size: 12px; font-weight: 700; border-radius: 6px; cursor: pointer; display: flex; align-items: center; gap: 4px;">
+              <span>➕</span> Qayta qo‘shish
+            </button>
+          </div>
+        `;
+      }
+      updateChipsStatusUI();
+    }
+
+    function toggleActiveElementVisibility(visible) {
+      const key = activeDesignerElement;
+      toggleElementVisibilityByKey(key, visible);
+    }
+
+    function toggleElementVisibilityByKey(key, visible) {
+      if (!designerElementsConfig[key]) {
+        designerElementsConfig[key] = JSON.parse(JSON.stringify(DEFAULT_ELEMENTS_CONFIG[key] || {}));
+      }
+      designerElementsConfig[key].visible = visible;
+      document.getElementById('elVisible').checked = visible;
+      updateVisibilityUI();
+      renderCanvasElements();
+      showToast(visible ? `«${designerElementsConfig[key].label || key}» sertifikatga qo‘shildi` : `«${designerElementsConfig[key].label || key}» sertifikatdan olib tashlandi`);
+    }
+
+    function selectCanvasElement(key) {
+      activeDesignerElement = key;
+
+      // Update chips UI
+      document.querySelectorAll('.element-chip').forEach(c => {
+        if (c.getAttribute('data-el') === key) {
+          c.classList.add('active');
+        } else {
+          c.classList.remove('active');
+        }
+      });
+
+      const cfg = designerElementsConfig[key] || DEFAULT_ELEMENTS_CONFIG[key];
+      const isVisible = cfg.visible !== false;
+      document.getElementById('activeElementBadge').textContent = `${cfg.label || key} (${isVisible ? 'Ko‘rinadi' : 'Olib tashlangan'})`;
+      document.getElementById('activeElementBadge').style.background = isVisible ? '#2563eb' : '#64748b';
+
+      // Show / hide QR vs Text settings
+      if (key === 'qr') {
+        document.getElementById('textSettingsGroup').style.display = 'none';
+        document.getElementById('qrSettingsGroup').style.display = 'block';
+        document.getElementById('elQrSize').value = cfg.size || 90;
+        document.getElementById('elQrSizeVal').textContent = cfg.size || 90;
+        document.getElementById('elQrBg').checked = Boolean(cfg.bg);
+      } else {
+        document.getElementById('textSettingsGroup').style.display = 'block';
+        document.getElementById('qrSettingsGroup').style.display = 'none';
+        document.getElementById('elFontFamily').value = cfg.fontFamily || 'Plus Jakarta Sans';
+        document.getElementById('elFontSize').value = cfg.fontSize || 20;
+        document.getElementById('elFontSizeVal').textContent = cfg.fontSize || 20;
+        document.getElementById('elColor').value = cfg.color || '#0f172a';
+        document.getElementById('elColorPicker').value = (cfg.color && cfg.color.startsWith('#')) ? cfg.color : '#0f172a';
+        document.getElementById('elBold').checked = cfg.fontWeight === 'bold';
+
+        const align = cfg.textAlign || 'center';
+        setElementAlign(align, false);
+      }
+
+      document.getElementById('elVisible').checked = isVisible;
+      document.getElementById('elPosX').value = cfg.x;
+      document.getElementById('elPosXVal').textContent = cfg.x;
+      document.getElementById('elPosY').value = cfg.y;
+      document.getElementById('elPosYVal').textContent = cfg.y;
+
+      updateVisibilityUI();
+      highlightActiveCanvasElement();
+    }
+
+    function setElementAlign(align, update = true) {
+      document.querySelectorAll('.btn-toggle').forEach(b => {
+        if (b.getAttribute('data-align') === align) {
+          b.classList.add('active');
+        } else {
+          b.classList.remove('active');
+        }
+      });
+      if (designerElementsConfig[activeDesignerElement]) {
+        designerElementsConfig[activeDesignerElement].textAlign = align;
+      }
+      if (update) updateActiveElementFromInputs();
+    }
+
+    function syncColorFromPicker(val) {
+      document.getElementById('elColor').value = val;
+      updateActiveElementFromInputs();
+    }
+
+    function syncColorFromText(val) {
+      if (/^#[0-9A-F]{6}$/i.test(val)) {
+        document.getElementById('elColorPicker').value = val;
+      }
+      updateActiveElementFromInputs();
+    }
+
+    function updateActiveElementFromInputs() {
+      const key = activeDesignerElement;
+      if (!designerElementsConfig[key]) {
+        designerElementsConfig[key] = JSON.parse(JSON.stringify(DEFAULT_ELEMENTS_CONFIG[key] || {}));
+      }
+
+      const cfg = designerElementsConfig[key];
+      cfg.visible = document.getElementById('elVisible').checked;
+      cfg.x = parseFloat(document.getElementById('elPosX').value) || 0;
+      cfg.y = parseFloat(document.getElementById('elPosY').value) || 0;
+
+      document.getElementById('elPosXVal').textContent = cfg.x;
+      document.getElementById('elPosYVal').textContent = cfg.y;
+
+      if (key === 'qr') {
+        cfg.size = parseInt(document.getElementById('elQrSize').value, 10) || 90;
+        document.getElementById('elQrSizeVal').textContent = cfg.size;
+        cfg.bg = document.getElementById('elQrBg').checked;
+      } else {
+        cfg.fontFamily = document.getElementById('elFontFamily').value;
+        cfg.fontSize = parseInt(document.getElementById('elFontSize').value, 10) || 20;
+        document.getElementById('elFontSizeVal').textContent = cfg.fontSize;
+        cfg.color = document.getElementById('elColor').value;
+        cfg.fontWeight = document.getElementById('elBold').checked ? 'bold' : 'normal';
+      }
+
+      renderCanvasElements();
+    }
+
+    function renderCanvasElements() {
+      const canvas = document.getElementById('designerCanvas');
+      if (!canvas) return;
+
+      // Update background
+      if (designerBgDataUrl) {
+        canvas.style.backgroundImage = `url('${designerBgDataUrl}')`;
+      } else {
+        canvas.style.backgroundImage = 'none';
+        canvas.style.backgroundColor = '#ffffff';
+      }
+
+      // Sample QR code SVG dataUrl
+      const sampleQrSvg = "data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><rect width='100' height='100' fill='white'/><rect x='10' y='10' width='30' height='30' fill='black'/><rect x='15' y='15' width='20' height='20' fill='white'/><rect x='20' y='20' width='10' height='10' fill='black'/><rect x='60' y='10' width='30' height='30' fill='black'/><rect x='65' y='15' width='20' height='20' fill='white'/><rect x='70' y='20' width='10' height='10' fill='black'/><rect x='10' y='60' width='30' height='30' fill='black'/><rect x='15' y='65' width='20' height='20' fill='white'/><rect x='20' y='70' width='10' height='10' fill='black'/><rect x='50' y='50' width='20' height='20' fill='black'/><rect x='75' y='60' width='15' height='15' fill='black'/><rect x='60' y='80' width='20' height='10' fill='black'/></svg>";
+
+      let html = '';
+      for (const [key, cfg] of Object.entries(designerElementsConfig)) {
+        if (!cfg || cfg.visible === false) continue;
+
+        const isActive = key === activeDesignerElement;
+        const align = cfg.textAlign || 'center';
+        let transform = 'translate(-50%, -50%)';
+        if (align === 'left') transform = 'translate(0, -50%)';
+        if (align === 'right') transform = 'translate(-100%, -50%)';
+
+        if (key === 'qr') {
+          const qrSize = cfg.size || 90;
+          html += `
+            <div class="canvas-draggable-el ${isActive ? 'active' : ''}" 
+                 data-key="${key}"
+                 style="left: ${cfg.x}%; top: ${cfg.y}%; transform: translate(-50%, -50%); width: ${qrSize}px; height: ${qrSize}px; padding: 2px; ${cfg.bg ? 'background: white; border-radius: 6px;' : ''}">
+              <span class="canvas-el-tag">
+                ${cfg.label || 'QR'}
+                <span onclick="event.stopPropagation(); toggleElementVisibilityByKey('${key}', false)" title="Sertifikatdan olib tashlash" style="margin-left: 6px; cursor: pointer; color: #fca5a5; font-weight: bold; padding: 0 4px; border-radius: 3px; background: rgba(239, 68, 68, 0.3);">✕</span>
+              </span>
+              <img src="${sampleQrSvg}" style="width: 100%; height: 100%; pointer-events: none; display: block;" alt="QR" />
+            </div>
+          `;
+        } else {
+          html += `
+            <div class="canvas-draggable-el ${isActive ? 'active' : ''}" 
+                 data-key="${key}"
+                 style="left: ${cfg.x}%; top: ${cfg.y}%; transform: ${transform}; font-family: '${cfg.fontFamily || 'Plus Jakarta Sans'}', sans-serif; font-size: ${cfg.fontSize || 20}px; font-weight: ${cfg.fontWeight || 'bold'}; color: ${cfg.color || '#0f172a'}; text-align: ${align};">
+              <span class="canvas-el-tag">
+                ${cfg.label || key}
+                <span onclick="event.stopPropagation(); toggleElementVisibilityByKey('${key}', false)" title="Sertifikatdan olib tashlash" style="margin-left: 6px; cursor: pointer; color: #fca5a5; font-weight: bold; padding: 0 4px; border-radius: 3px; background: rgba(239, 68, 68, 0.3);">✕</span>
+              </span>
+              ${cfg.sample || cfg.label || key}
+            </div>
+          `;
+        }
+      }
+
+      // If active element is hidden, show dashed placeholder with add button
+      const activeCfg = designerElementsConfig[activeDesignerElement];
+      if (activeCfg && activeCfg.visible === false) {
+        const align = activeCfg.textAlign || 'center';
+        let transform = 'translate(-50%, -50%)';
+        if (align === 'left') transform = 'translate(0, -50%)';
+        if (align === 'right') transform = 'translate(-100%, -50%)';
+
+        html += `
+          <div class="canvas-draggable-el active" 
+               data-key="${activeDesignerElement}"
+               style="left: ${activeCfg.x}%; top: ${activeCfg.y}%; transform: ${transform}; font-family: '${activeCfg.fontFamily || 'Plus Jakarta Sans'}', sans-serif; font-size: ${activeCfg.fontSize || 18}px; border: 2px dashed #ef4444; background: rgba(239, 68, 68, 0.08); color: #ef4444; opacity: 0.85;">
+            <span class="canvas-el-tag" style="background: #ef4444; display: block;">
+              ${activeCfg.label || activeDesignerElement} (Olib tashlangan)
+              <span onclick="event.stopPropagation(); toggleElementVisibilityByKey('${activeDesignerElement}', true)" title="Sertifikatga qo‘shish" style="margin-left: 6px; cursor: pointer; color: white; font-weight: bold; padding: 0 4px; border-radius: 3px; background: rgba(0,0,0,0.25);">➕</span>
+            </span>
+            ${activeCfg.sample || activeCfg.label || activeDesignerElement}
+          </div>
+        `;
+      }
+
+      if (!designerBgDataUrl) {
+        html += `
+          <div style="position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); text-align: center; color: #94a3b8; pointer-events: none;">
+            <div style="font-size: 32px; margin-bottom: 8px;">🖼️</div>
+            <strong style="font-size: 14px; display: block;">Blanka rasmi yuklanmagan</strong>
+            <span style="font-size: 12px;">Chap tarafdan «Blanka rasmi (PNG/JPG)» tanlang</span>
+          </div>
+        `;
+      }
+
+      canvas.innerHTML = html;
+      attachCanvasElementEvents();
+    }
+
+    function highlightActiveCanvasElement() {
+      document.querySelectorAll('.canvas-draggable-el').forEach(el => {
+        if (el.getAttribute('data-key') === activeDesignerElement) {
+          el.classList.add('active');
+        } else {
+          el.classList.remove('active');
+        }
+      });
+    }
+
+    function attachCanvasElementEvents() {
+      document.querySelectorAll('.canvas-draggable-el').forEach(el => {
+        el.addEventListener('mousedown', (e) => {
+          e.stopPropagation();
+          const key = el.getAttribute('data-key');
+          selectCanvasElement(key);
+          isCanvasDragging = true;
+          currentDragElKey = key;
+        });
+      });
+    }
+
+    function initCanvasDragListeners() {
+      const canvas = document.getElementById('designerCanvas');
+      if (!canvas || canvas.hasDragListeners) return;
+      canvas.hasDragListeners = true;
+
+      canvas.addEventListener('mousemove', (e) => {
+        if (!isCanvasDragging || !currentDragElKey) return;
+        const rect = canvas.getBoundingClientRect();
+        const x = Math.max(0, Math.min(100, ((e.clientX - rect.left) / rect.width) * 100));
+        const y = Math.max(0, Math.min(100, ((e.clientY - rect.top) / rect.height) * 100));
+
+        if (designerElementsConfig[currentDragElKey]) {
+          designerElementsConfig[currentDragElKey].x = Math.round(x * 10) / 10;
+          designerElementsConfig[currentDragElKey].y = Math.round(y * 10) / 10;
+
+          document.getElementById('elPosX').value = designerElementsConfig[currentDragElKey].x;
+          document.getElementById('elPosXVal').textContent = designerElementsConfig[currentDragElKey].x;
+          document.getElementById('elPosY').value = designerElementsConfig[currentDragElKey].y;
+          document.getElementById('elPosYVal').textContent = designerElementsConfig[currentDragElKey].y;
+
+          renderCanvasElements();
+        }
+      });
+
+      document.addEventListener('mouseup', () => {
+        isCanvasDragging = false;
+        currentDragElKey = null;
+      });
+    }
+
+    async function saveDesignerTemplate() {
+      const name = document.getElementById('dtplName').value.trim();
+      const orientation = document.getElementById('dtplOrientation').value;
+      const fileInput = document.getElementById('dtplBgFile');
+
+      if (!name) {
+        showToast('Iltimos, shablon nomini kiriting.', 'error');
+        document.getElementById('dtplName').focus();
+        return;
+      }
+
+      if (!currentDesignerTplId && !fileInput.files[0]) {
+        showToast('Iltimos, blanka fon rasmini (.png yoki .jpg) yuklang.', 'error');
+        return;
+      }
+
+      const btn = document.getElementById('btnSaveDesignerTemplate');
+      btn.disabled = true;
+      btn.textContent = 'Saqlanmoqda...';
+
+      const fd = new FormData();
+      fd.append('name', name);
+      fd.append('orientation', orientation);
+      fd.append('elements_config', JSON.stringify(designerElementsConfig));
+
+      if (fileInput.files[0]) {
+        fd.append('bg_image', fileInput.files[0]);
+      }
+
+      try {
+        const url = currentDesignerTplId 
+          ? `/admin/api/custom-templates/${currentDesignerTplId}` 
+          : '/admin/api/custom-templates';
+        const method = currentDesignerTplId ? 'PUT' : 'POST';
+
+        const res = await fetch(url, {
+          method,
+          body: fd
+        });
+
+        const data = await res.json();
+        if (res.ok) {
+          showToast(currentDesignerTplId ? 'Shablon yangilandi!' : 'Yangi shablon muvaffaqiyatli saqlandi!');
+          closeDesignerModal();
+          await loadCustomTemplates();
+        } else {
+          showToast(data.error || 'Saqlashda xatolik', 'error');
+        }
+      } catch (err) {
+        showToast('Server bilan bog‘lanishda xatolik', 'error');
+      } finally {
+        btn.disabled = false;
+        btn.textContent = '✓ Shablonni saqlash';
+      }
+    }
+
+    async function downloadDesignerPdfPreview() {
+      const orientation = document.getElementById('dtplOrientation').value;
+      const fileInput = document.getElementById('dtplBgFile');
+
+      const btn = document.getElementById('btnPreviewTestPdf');
+      btn.disabled = true;
+      btn.innerHTML = '<span class="spinner"></span> Generatsiya qilinmoqda...';
+
+      const fd = new FormData();
+      fd.append('orientation', orientation);
+      fd.append('elements_config', JSON.stringify(designerElementsConfig));
+      if (designerExistingBg) {
+        fd.append('existing_bg', designerExistingBg);
+      }
+      if (fileInput.files[0]) {
+        fd.append('bg_image', fileInput.files[0]);
+      }
+
+      try {
+        const res = await fetch('/admin/api/custom-templates/preview-pdf', {
+          method: 'POST',
+          body: fd
+        });
+
+        if (!res.ok) {
+          const errText = await res.text();
+          showToast('Sinov PDF xatosi: ' + errText, 'error');
+          return;
+        }
+
+        const blob = await res.blob();
+        const url = window.URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = `sinov_${document.getElementById('dtplName').value || 'shablon'}.pdf`;
+        document.body.appendChild(a);
+        a.click();
+        document.body.removeChild(a);
+        window.URL.revokeObjectURL(url);
+        showToast('Sinov PDF yuklab olindi!');
+      } catch (err) {
+        showToast('PDF generatsiyasida xatolik', 'error');
+      } finally {
+        btn.disabled = false;
+        btn.innerHTML = '<svg width="16" height="16" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/></svg> <span>PDF Sinov yuklab olish</span>';
+      }
+    }
+
+    async function testDownloadCustomTplPdf(tplId) {
+      try {
+        const res = await fetch(`/admin/api/custom-templates/${tplId}`);
+        if (!res.ok) return;
+        const tpl = await res.json();
+
+        const fd = new FormData();
+        fd.append('orientation', tpl.orientation);
+        fd.append('elements_config', tpl.elements_config);
+        fd.append('existing_bg', tpl.bg_image);
+
+        const pdfRes = await fetch('/admin/api/custom-templates/preview-pdf', {
+          method: 'POST',
+          body: fd
+        });
+
+        if (pdfRes.ok) {
+          const blob = await pdfRes.blob();
+          const url = window.URL.createObjectURL(blob);
+          const a = document.createElement('a');
+          a.href = url;
+          a.download = `shablon_${tpl.name}.pdf`;
+          document.body.appendChild(a);
+          a.click();
+          document.body.removeChild(a);
+          window.URL.revokeObjectURL(url);
+        }
+      } catch (err) {
+        showToast('Sinov yuklab olishda xatolik', 'error');
+      }
+    }
+
+    async function deleteCustomTemplate(id) {
+      if (confirm('Ushbu maxsus shablonni o‘chirishni tasdiqlaysizmi?')) {
+        try {
+          const res = await fetch(`/admin/api/custom-templates/${id}`, { method: 'DELETE' });
+          const data = await res.json();
+          if (res.ok) {
+            showToast('Shablon o‘chirildi!');
+            await loadCustomTemplates();
+          } else {
+            showToast(data.error || 'O‘chirishda xatolik', 'error');
+          }
+        } catch (err) {
+          showToast('Server xatosi', 'error');
+        }
+      }
+    }
+
+    // Call loadCustomTemplates on init
+    loadCustomTemplates();
   </script>
 </body>
 </html>

@@ -1,8 +1,8 @@
 const fs = require('fs');
 const path = require('path');
-const QRCode = require('qrcode');
 const { chromium } = require('playwright-core');
-const { getSetting } = require('./db');
+const QRCode = require('qrcode');
+const { getSetting, getCustomTemplate } = require('./db');
 
 const TEMPLATES_DIR = path.join(__dirname, '..', 'templates');
 const UPLOADS_DIR = path.join(__dirname, '..', 'uploads');
@@ -126,9 +126,12 @@ async function generateQrCode(text) {
  * Get logo or coat of arms base64 data
  */
 function getLogoDataUrl() {
-  const customLogoPath = getSetting('logo_path');
+  const customLogoPath = getSetting('logo_path') || 'RTRM logo eng.png';
   if (customLogoPath) {
-    const fullPath = path.join(UPLOADS_DIR, customLogoPath);
+    let fullPath = path.join(UPLOADS_DIR, customLogoPath);
+    if (!fs.existsSync(fullPath)) {
+      fullPath = path.join(__dirname, '..', 'public', customLogoPath);
+    }
     if (fs.existsSync(fullPath)) {
       const ext = path.extname(fullPath).toLowerCase().replace('.', '');
       const mime = ext === 'svg' ? 'image/svg+xml' : `image/${ext === 'jpg' ? 'jpeg' : ext}`;
@@ -195,9 +198,187 @@ function getLogoDataUrl() {
 }
 
 /**
+ * Check if template is landscape orientation
+ */
+function isTemplateLandscape(templateName) {
+  if (templateName === 'diplom') return true;
+  let customId = null;
+  if (typeof templateName === 'string' && (templateName.startsWith('custom:') || templateName.startsWith('custom_'))) {
+    customId = parseInt(templateName.replace(/^custom[:_]/, ''), 10);
+  } else if (!isNaN(parseInt(templateName, 10)) && !fs.existsSync(path.join(TEMPLATES_DIR, `${templateName}.html`))) {
+    customId = parseInt(templateName, 10);
+  }
+  if (customId) {
+    const customTpl = getCustomTemplate(customId);
+    if (customTpl && customTpl.orientation === 'landscape') return true;
+    if (customTpl && customTpl.orientation === 'portrait') return false;
+  }
+  return false;
+}
+
+/**
+ * Render custom template HTML from uploaded image background and element coordinates
+ */
+async function renderCustomHtml(customTpl, certData, baseUrl) {
+  const isLandscape = customTpl.orientation !== 'portrait';
+
+  // Find background image
+  let bgPath = path.join(UPLOADS_DIR, customTpl.bg_image);
+  if (!fs.existsSync(bgPath)) {
+    bgPath = path.join(__dirname, '..', 'public', customTpl.bg_image);
+  }
+
+  let bgDataUrl = '';
+  if (fs.existsSync(bgPath)) {
+    const ext = path.extname(bgPath).toLowerCase();
+    const mime = ext === '.png' ? 'image/png' : (ext === '.svg' ? 'image/svg+xml' : 'image/jpeg');
+    const base64 = fs.readFileSync(bgPath).toString('base64');
+    bgDataUrl = `data:${mime};base64,${base64}`;
+  }
+
+  // QR Code
+  const verifyUrl = `${baseUrl.replace(/\/+$/, '')}/t/${certData.uid || 'demo'}`;
+  const qrDataUrl = await generateQrCode(verifyUrl);
+
+  const formattedDate = formatUzDate(certData.issue_date || new Date());
+  const formattedStart = formatUzDate(certData.start_date || new Date());
+  const formattedEnd = formatUzDate(certData.end_date || new Date());
+
+  // Parse body text
+  let bodyText = certData.body_text || "{{START}}dan {{END}}gacha {{HOURS}} soatga mo'ljallangan «{{TITLE}}» kursi bo'yicha malakasini oshirdi.";
+  bodyText = bodyText
+    .replace(/\{\{FIO\}\}/g, certData.fio || '')
+    .replace(/\{\{HOURS\}\}/g, String(certData.hours || ''))
+    .replace(/\{\{START\}\}/g, formattedStart)
+    .replace(/\{\{END\}\}/g, formattedEnd)
+    .replace(/\{\{TITLE\}\}/g, certData.title || '')
+    .replace(/\{\{SCORE\}\}/g, certData.score != null ? String(certData.score) : '');
+
+  const cfg = customTpl.parsedConfig || {};
+
+  function getStyle(itemCfg) {
+    if (!itemCfg) return 'display: none;';
+    const align = itemCfg.textAlign || 'center';
+    let transform = 'translate(-50%, -50%)';
+    if (align === 'left') transform = 'translate(0, -50%)';
+    if (align === 'right') transform = 'translate(-100%, -50%)';
+
+    return `
+      position: absolute;
+      left: ${itemCfg.x}%;
+      top: ${itemCfg.y}%;
+      transform: ${transform};
+      font-family: '${itemCfg.fontFamily || 'Plus Jakarta Sans'}', sans-serif, serif;
+      font-size: ${itemCfg.fontSize || 20}px;
+      font-weight: ${itemCfg.fontWeight || 'bold'};
+      color: ${itemCfg.color || '#0f172a'};
+      text-align: ${align};
+      ${itemCfg.width ? `width: ${itemCfg.width}%;` : ''}
+      ${itemCfg.letterSpacing ? `letter-spacing: ${itemCfg.letterSpacing}px;` : ''}
+      ${itemCfg.lineHeight ? `line-height: ${itemCfg.lineHeight};` : ''}
+      ${itemCfg.textTransform ? `text-transform: ${itemCfg.textTransform};` : ''}
+      z-index: 10;
+      display: ${itemCfg.visible !== false ? 'block' : 'none'};
+    `;
+  }
+
+  function getQrStyle(qrCfg) {
+    if (!qrCfg) return 'display: none;';
+    const size = qrCfg.size || 100;
+    return `
+      position: absolute;
+      left: ${qrCfg.x}%;
+      top: ${qrCfg.y}%;
+      transform: translate(-50%, -50%);
+      width: ${size}px;
+      height: ${size}px;
+      z-index: 10;
+      display: ${qrCfg.visible !== false ? 'block' : 'none'};
+      ${qrCfg.bg ? `background: ${qrCfg.bg}; padding: 4px; border-radius: 6px;` : ''}
+    `;
+  }
+
+  const certNoText = `${certData.series || 'MO'} № ${certData.cert_no || '000001'}`;
+  const regNoPrefix = (cfg.regNo && cfg.regNo.prefix !== undefined) ? cfg.regNo.prefix : '№ ';
+  const regNoText = certData.reg_no ? `${regNoPrefix}${certData.reg_no}` : '';
+  const hoursText = certData.hours ? `${certData.hours} soat` : '';
+
+  return `
+<!DOCTYPE html>
+<html lang="uz">
+<head>
+  <meta charset="UTF-8">
+  <title>Sertifikat — ${certData.series || ''} ${certData.cert_no || ''}</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Great+Vibes&family=Merriweather:ital,wght@0,400;0,700;1,400&family=Montserrat:wght@400;500;600;700;800&family=Playfair+Display:ital,wght@0,600;0,700;0,800;1,600&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=Roboto:wght@400;500;700&display=swap" rel="stylesheet">
+  <style>
+    @page {
+      size: ${isLandscape ? 'A4 landscape' : 'A4 portrait'};
+      margin: 0;
+    }
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    html, body {
+      width: ${isLandscape ? '297mm' : '210mm'};
+      height: ${isLandscape ? '210mm' : '297mm'};
+      margin: 0;
+      padding: 0;
+      overflow: hidden;
+      -webkit-print-color-adjust: exact;
+      print-color-adjust: exact;
+    }
+    .cert-canvas {
+      position: relative;
+      width: ${isLandscape ? '297mm' : '210mm'};
+      height: ${isLandscape ? '210mm' : '297mm'};
+      background-image: url('${bgDataUrl}');
+      background-size: 100% 100%;
+      background-position: center;
+      background-repeat: no-repeat;
+      overflow: hidden;
+    }
+  </style>
+</head>
+<body>
+  <div class="cert-canvas">
+    ${(cfg.orgLine1 && cfg.orgLine1.visible !== false && certData.org_line1) ? `<div style="${getStyle(cfg.orgLine1)}">${(certData.org_line1 || '').toUpperCase()}</div>` : ''}
+    ${(cfg.orgLine2 && cfg.orgLine2.visible !== false && certData.org_line2) ? `<div style="${getStyle(cfg.orgLine2)}">${certData.org_line2 || ''}</div>` : ''}
+    ${(cfg.fio && cfg.fio.visible !== false) ? `<div style="${getStyle(cfg.fio)}">${certData.fio || ''}</div>` : ''}
+    ${(cfg.courseTitle && cfg.courseTitle.visible !== false && certData.title) ? `<div style="${getStyle(cfg.courseTitle)}">${certData.title || ''}</div>` : ''}
+    ${(cfg.bodyText && cfg.bodyText.visible !== false) ? `<div style="${getStyle(cfg.bodyText)}">${bodyText}</div>` : ''}
+    ${(cfg.certNo && cfg.certNo.visible !== false) ? `<div style="${getStyle(cfg.certNo)}">${certNoText}</div>` : ''}
+    ${(cfg.issueDate && cfg.issueDate.visible !== false) ? `<div style="${getStyle(cfg.issueDate)}">${formattedDate}</div>` : ''}
+    ${(cfg.regNo && cfg.regNo.visible !== false && certData.reg_no) ? `<div style="${getStyle(cfg.regNo)}">${regNoText}</div>` : ''}
+    ${(cfg.hoursPeriod && cfg.hoursPeriod.visible !== false && hoursText) ? `<div style="${getStyle(cfg.hoursPeriod)}">${hoursText}</div>` : ''}
+    ${(cfg.score && cfg.score.visible !== false && certData.score != null && certData.score !== '') ? `<div style="${getStyle(cfg.score)}">${certData.score} ball</div>` : ''}
+    ${(cfg.director && cfg.director.visible !== false && certData.director) ? `<div style="${getStyle(cfg.director)}">${certData.director || ''}</div>` : ''}
+    ${(cfg.qr && cfg.qr.visible !== false) ? `<div style="${getQrStyle(cfg.qr)}"><img src="${qrDataUrl}" style="width: 100%; height: 100%; display: block;" alt="QR Code" /></div>` : ''}
+  </div>
+</body>
+</html>
+  `;
+}
+
+/**
  * Render HTML string by populating template placeholders
  */
 async function renderHtml(templateName, certData, baseUrl) {
+  // Check if template is custom
+  let customId = null;
+  if (typeof templateName === 'string' && (templateName.startsWith('custom:') || templateName.startsWith('custom_'))) {
+    customId = parseInt(templateName.replace(/^custom[:_]/, ''), 10);
+  } else if (!isNaN(parseInt(templateName, 10)) && !fs.existsSync(path.join(TEMPLATES_DIR, `${templateName}.html`))) {
+    customId = parseInt(templateName, 10);
+  }
+
+  if (customId) {
+    const customTpl = getCustomTemplate(customId);
+    if (!customTpl) {
+      throw new Error(`Maxsus shablon topilmadi (ID: ${customId})`);
+    }
+    return await renderCustomHtml(customTpl, certData, baseUrl);
+  }
+
   const tplFile = path.join(TEMPLATES_DIR, `${templateName}.html`);
   if (!fs.existsSync(tplFile)) {
     throw new Error(`Shablon topilmadi: ${templateName}`);
@@ -304,6 +485,8 @@ async function generatePdf(html, isLandscape = false) {
 
 module.exports = {
   renderHtml,
+  renderCustomHtml,
+  isTemplateLandscape,
   generatePdf,
   generateQrCode,
   formatUzDate,

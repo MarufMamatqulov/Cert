@@ -11,14 +11,19 @@ const {
   db,
   initDb,
   getNextCertNo,
+  getNextRegNo,
   generateUid,
   maskPinfl,
   getSetting,
-  setSetting
+  setSetting,
+  getCustomTemplate,
+  getAllCustomTemplates
 } = require('./db');
 
 const {
   renderHtml,
+  renderCustomHtml,
+  isTemplateLandscape,
   generatePdf,
   formatUzDate
 } = require('./render');
@@ -135,9 +140,9 @@ app.get('/api/captcha', (req, res) => {
 // Config for public search dropdown
 app.get('/api/config', (req, res) => {
   try {
-    const title = getSetting('site_title') || "O'zbekiston Respublikasi Sertifikatlar Reyestri";
-    const org = getSetting('site_org') || "Kadrlar malakasini oshirish va qayta tayyorlash milliy markazi";
-    const logo = getSetting('logo_path') || '';
+    const title = getSetting('site_title') || "Digital Education Development Center";
+    const org = getSetting('site_org') || "Digital Education Development Center";
+    const logo = getSetting('logo_path') || 'RTRM logo eng.png';
 
     const courses = db.prepare(`
       SELECT id, code, title, series 
@@ -244,7 +249,7 @@ app.get('/yuklash/:uid', async (req, res) => {
 
   try {
     const cert = db.prepare(`
-      SELECT c.*, k.title, k.org_line1, k.org_line2, k.series, k.hours, 
+      SELECT c.*, k.title, k.org_line1, k.org_line2, COALESCE(c.series, k.series) as series, k.hours, 
              k.start_date, k.end_date, k.body_text, k.director, k.show_score, 
              k.accent, k.template as course_template
       FROM certificates c
@@ -285,10 +290,13 @@ app.get('/yuklash/:uid', async (req, res) => {
     } catch (_) {}
 
     const templateName = cert.template || cert.course_template || 'davlat';
-    const baseUrl = getSetting('base_url') || BASE_URL;
+    const configuredBaseUrl = getSetting('base_url');
+    const reqHost = req.get('host');
+    const dynamicBaseUrl = reqHost ? `${req.protocol}://${reqHost}` : BASE_URL;
+    const baseUrl = (configuredBaseUrl && !configuredBaseUrl.includes('localhost')) ? configuredBaseUrl : dynamicBaseUrl;
     const html = await renderHtml(templateName, cert, baseUrl);
 
-    const isLandscape = templateName === 'diplom';
+    const isLandscape = isTemplateLandscape(templateName);
     const pdfBuffer = await generatePdf(html, isLandscape);
 
     res.setHeader('Content-Type', 'application/pdf');
@@ -312,8 +320,8 @@ app.get('/t/:uid', (req, res) => {
     WHERE c.uid = ?
   `).get(uid);
 
-  const siteTitle = getSetting('site_title') || "O'zbekiston Respublikasi Sertifikatlar Reyestri";
-  const siteOrg = getSetting('site_org') || "Kadrlar malakasini oshirish va qayta tayyorlash milliy markazi";
+  const siteTitle = getSetting('site_title') || "Digital Education Development Center";
+  const siteOrg = getSetting('site_org') || "Digital Education Development Center";
 
   if (!cert) {
     return res.status(404).send(`
@@ -466,6 +474,11 @@ app.get('/t/:uid', (req, res) => {
       </style>
     </head>
     <body>
+      <div style="text-align: center; margin-bottom: 24px;">
+        <a href="/">
+          <img src="/RTRM%20logo%20eng.png" alt="Digital Education Development Center" style="max-height: 46px; width: auto; object-fit: contain;">
+        </a>
+      </div>
       <div class="container">
         <div class="header-status">
           <div class="status-badge">
@@ -546,8 +559,9 @@ app.get('/admin', needAuth, (req, res) => {
 
 app.post('/admin/api/login', (req, res) => {
   const ip = req.ip || req.connection.remoteAddress || 'unknown';
-  if (!checkRateLimit(loginRateLimit, ip, 5, 15 * 60000)) {
-    return res.status(429).json({ error: 'Kirish urinishlari ko‘payib ketdi. 15 daqiqadan so‘ng qayta urinib ko‘ring.' });
+  const isLocal = ip.includes('127.0.0.1') || ip.includes('::1') || ip === 'unknown';
+  if (!isLocal && !checkRateLimit(loginRateLimit, ip, 30, 2 * 60000)) {
+    return res.status(429).json({ error: 'Kirish urinishlari ko‘payib ketdi. 2 daqiqadan so‘ng qayta urinib ko‘ring.' });
   }
 
   const { username, password } = req.body;
@@ -559,6 +573,9 @@ app.post('/admin/api/login', (req, res) => {
   if (!admin || !bcrypt.compareSync(password, admin.password_hash)) {
     return res.status(401).json({ error: 'Login yoki parol noto‘g‘ri.' });
   }
+
+  // Clear rate limit on successful authentication
+  loginRateLimit.delete(ip);
 
   req.session.adminId = admin.id;
   req.session.username = admin.username;
@@ -593,9 +610,11 @@ app.get('/admin/api/me', needAuth, (req, res) => {
     logo_path: getSetting('logo_path') || ''
   };
 
+  const customTemplates = getAllCustomTemplates();
   res.json({
     admin,
     templates: ['davlat', 'zamonaviy', 'korporativ', 'diplom'],
+    customTemplates,
     settings
   });
 });
@@ -749,6 +768,193 @@ app.delete('/admin/api/courses/:id', needAuth, (req, res) => {
   }
 });
 
+// Auto-generate next numbers and series for a course
+app.get('/admin/api/courses/:id/next-numbers', needAuth, (req, res) => {
+  const courseId = req.params.id;
+  try {
+    const course = db.prepare('SELECT id, series FROM courses WHERE id = ?').get(courseId);
+    if (!course) {
+      return res.status(404).json({ error: 'Kurs topilmadi' });
+    }
+    const nextCertNo = getNextCertNo(courseId);
+    const nextRegNo = getNextRegNo();
+    const today = new Date().toISOString().split('T')[0];
+
+    res.json({
+      series: course.series || 'MO',
+      next_cert_no: nextCertNo,
+      next_reg_no: nextRegNo,
+      issue_date: today
+    });
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
+// ==========================================
+// CUSTOM TEMPLATES API (Vizual Konstruktor)
+// ==========================================
+
+// Get all custom templates
+app.get('/admin/api/custom-templates', needAuth, (req, res) => {
+  try {
+    const templates = getAllCustomTemplates();
+    res.json(templates);
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
+// Get single custom template
+app.get('/admin/api/custom-templates/:id', needAuth, (req, res) => {
+  try {
+    const tpl = getCustomTemplate(req.params.id);
+    if (!tpl) return res.status(404).json({ error: 'Shablon topilmadi.' });
+    res.json(tpl);
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
+// Create new custom template with background image upload
+app.post('/admin/api/custom-templates', needAuth, upload.single('bg_image'), (req, res) => {
+  if (!req.file) {
+    return res.status(400).json({ error: 'Blanka fon rasmi (.png yoki .jpg) yuklanishi shart.' });
+  }
+
+  const { name, orientation = 'landscape', elements_config } = req.body;
+  if (!name || !name.trim()) {
+    return res.status(400).json({ error: 'Shablon nomi kiritilishi shart.' });
+  }
+
+  const bg_image = path.basename(req.file.path);
+  let finalConfig = '{}';
+
+  if (typeof elements_config === 'string') {
+    finalConfig = elements_config;
+  } else if (typeof elements_config === 'object') {
+    finalConfig = JSON.stringify(elements_config);
+  }
+
+  try {
+    const result = db.prepare(`
+      INSERT INTO custom_templates (name, bg_image, orientation, elements_config)
+      VALUES (?, ?, ?, ?)
+    `).run(name.trim(), bg_image, orientation, finalConfig);
+
+    const created = getCustomTemplate(result.lastInsertRowid);
+    res.json({ success: true, id: result.lastInsertRowid, template: created });
+  } catch (err) {
+    console.error('Create template error:', err);
+    res.status(500).json({ error: err.message });
+  }
+});
+
+// Update custom template
+app.put('/admin/api/custom-templates/:id', needAuth, upload.single('bg_image'), (req, res) => {
+  const id = req.params.id;
+  const tpl = getCustomTemplate(id);
+  if (!tpl) return res.status(404).json({ error: 'Shablon topilmadi.' });
+
+  const { name, orientation, elements_config } = req.body;
+  const bg_image = req.file ? path.basename(req.file.path) : tpl.bg_image;
+  const finalName = name && name.trim() ? name.trim() : tpl.name;
+  const finalOrientation = orientation || tpl.orientation;
+  
+  let finalConfig = tpl.elements_config;
+  if (typeof elements_config === 'string') {
+    finalConfig = elements_config;
+  } else if (typeof elements_config === 'object') {
+    finalConfig = JSON.stringify(elements_config);
+  }
+
+  try {
+    db.prepare(`
+      UPDATE custom_templates 
+      SET name = ?, bg_image = ?, orientation = ?, elements_config = ?
+      WHERE id = ?
+    `).run(finalName, bg_image, finalOrientation, finalConfig, id);
+
+    const updated = getCustomTemplate(id);
+    res.json({ success: true, template: updated });
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
+// Delete custom template
+app.delete('/admin/api/custom-templates/:id', needAuth, (req, res) => {
+  const id = req.params.id;
+  try {
+    // Check if in use in courses or certificates
+    const inCourses = db.prepare("SELECT COUNT(*) as c FROM courses WHERE template = ? OR template = ?").get(`custom:${id}`, `custom_${id}`).c;
+    const inCerts = db.prepare("SELECT COUNT(*) as c FROM certificates WHERE template = ? OR template = ?").get(`custom:${id}`, `custom_${id}`).c;
+
+    if (inCourses > 0 || inCerts > 0) {
+      return res.status(400).json({
+        error: `Ushbu shablon ${inCourses} ta kurs yoki ${inCerts} ta sertifikatda ishlatilmoqda. Uni o‘chirishdan oldin ularning shablonini o‘zgartiring.`
+      });
+    }
+
+    db.prepare('DELETE FROM custom_templates WHERE id = ?').run(id);
+    res.json({ success: true });
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
+// Live test PDF generation from template designer
+app.post('/admin/api/custom-templates/preview-pdf', needAuth, upload.single('bg_image'), async (req, res) => {
+  try {
+    let bgFilename = req.body.existing_bg || '';
+    if (req.file) {
+      bgFilename = path.basename(req.file.path);
+    }
+    const orientation = req.body.orientation || 'landscape';
+    let elementsConfig = {};
+    if (req.body.elements_config) {
+      try {
+        elementsConfig = typeof req.body.elements_config === 'string' 
+          ? JSON.parse(req.body.elements_config) 
+          : req.body.elements_config;
+      } catch (_) {}
+    }
+
+    const mockCert = {
+      uid: 'demo' + Date.now().toString(16),
+      fio: req.body.sample_fio || 'ALISHER NAVOIY',
+      pinfl: '31502900000012',
+      cert_no: '000123',
+      reg_no: '1001',
+      score: 95.0,
+      issue_date: new Date().toISOString().split('T')[0],
+      title: req.body.sample_title || 'Zamonaviy axborot texnologiyalari kursi',
+      series: 'MO',
+      hours: 72,
+      director: 'I.M. Azimov'
+    };
+
+    const customTpl = {
+      name: 'Sinov shabloni',
+      bg_image: bgFilename,
+      orientation,
+      parsedConfig: elementsConfig
+    };
+
+    const baseUrl = getSetting('base_url') || BASE_URL;
+    const html = await renderCustomHtml(customTpl, mockCert, baseUrl);
+    const isLandscape = orientation !== 'portrait';
+    const pdfBuffer = await generatePdf(html, isLandscape);
+
+    res.setHeader('Content-Type', 'application/pdf');
+    res.setHeader('Content-Disposition', 'inline; filename="sinov_shablon.pdf"');
+    res.send(pdfBuffer);
+  } catch (err) {
+    console.error('Preview PDF error:', err);
+    res.status(500).send('Sinov PDF xatosi: ' + err.message);
+  }
+});
+
 // Certificates CRUD with pagination and search
 app.get('/admin/api/certificates', needAuth, (req, res) => {
   const { q, course, page = 1, limit = 25 } = req.query;
@@ -783,7 +989,7 @@ app.get('/admin/api/certificates', needAuth, (req, res) => {
     const totalPages = Math.ceil(total / pageSize) || 1;
 
     const items = db.prepare(`
-      SELECT c.*, k.title as course_title, k.series
+      SELECT c.*, k.title as course_title, COALESCE(c.series, k.series) as series
       FROM certificates c
       JOIN courses k ON c.course_id = k.id
       WHERE ${whereSql}
@@ -806,12 +1012,12 @@ app.get('/admin/api/certificates', needAuth, (req, res) => {
 
 app.post('/admin/api/certificates', needAuth, (req, res) => {
   const {
-    course_id, fio, pinfl, passport, cert_no, reg_no,
+    course_id, fio, pinfl, passport, series, cert_no, reg_no,
     score, issue_date, template, status, note
   } = req.body;
 
-  if (!course_id || !fio || !pinfl || !issue_date) {
-    return res.status(400).json({ error: 'Kurs, F.I.Sh., PINFL va berilgan sana kiritilishi shart.' });
+  if (!course_id || !fio || !pinfl) {
+    return res.status(400).json({ error: 'Kurs, F.I.Sh. va PINFL kiritilishi shart.' });
   }
 
   const cleanPinfl = String(pinfl).replace(/\D/g, '').trim();
@@ -820,38 +1026,48 @@ app.post('/admin/api/certificates', needAuth, (req, res) => {
   }
 
   try {
+    const course = db.prepare('SELECT id, series FROM courses WHERE id = ?').get(course_id);
+    const finalSeries = (series && String(series).trim()) 
+      ? String(series).trim().toUpperCase() 
+      : (course ? course.series : 'MO');
+
     const finalCertNo = (cert_no && String(cert_no).trim()) 
       ? String(cert_no).trim().padStart(6, '0') 
       : getNextCertNo(course_id);
 
     const finalRegNo = (reg_no && String(reg_no).trim())
       ? String(reg_no).trim()
-      : finalCertNo.replace(/^0+/, '') || '1';
+      : getNextRegNo();
+
+    const finalIssueDate = (issue_date && String(issue_date).trim())
+      ? String(issue_date).trim()
+      : new Date().toISOString().split('T')[0];
 
     const uid = generateUid();
 
     const result = db.prepare(`
       INSERT INTO certificates (
-        uid, course_id, fio, pinfl, passport, cert_no, reg_no,
+        uid, course_id, fio, pinfl, passport, series, cert_no, reg_no,
         score, issue_date, template, status, note, created_by
-      ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+      ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
     `).run(
       uid,
       course_id,
       String(fio).trim().toUpperCase(),
       cleanPinfl,
       passport ? String(passport).trim().toUpperCase() : null,
+      finalSeries,
       finalCertNo,
       finalRegNo,
       score != null && score !== '' ? parseFloat(score) : null,
-      issue_date,
+      finalIssueDate,
       template || null,
       status || 'active',
       note || null,
       req.session.adminId
     );
 
-    res.json({ success: true, id: result.lastInsertRowid, uid, cert_no: finalCertNo });
+    res.json({ success: true, id: result.lastInsertRowid, uid, cert_no: finalCertNo, reg_no: finalRegNo, series: finalSeries });
   } catch (err) {
     if (err.message.includes('UNIQUE')) {
       return res.status(400).json({ error: 'Ushbu kursda bu sertifikat raqami allaqachon mavjud.' });
@@ -863,7 +1079,7 @@ app.post('/admin/api/certificates', needAuth, (req, res) => {
 app.put('/admin/api/certificates/:id', needAuth, (req, res) => {
   const id = req.params.id;
   const {
-    course_id, fio, pinfl, passport, cert_no, reg_no,
+    course_id, fio, pinfl, passport, series, cert_no, reg_no,
     score, issue_date, template, status, note
   } = req.body;
 
@@ -875,7 +1091,7 @@ app.put('/admin/api/certificates/:id', needAuth, (req, res) => {
   try {
     db.prepare(`
       UPDATE certificates SET
-        course_id = ?, fio = ?, pinfl = ?, passport = ?, cert_no = ?, reg_no = ?,
+        course_id = ?, fio = ?, pinfl = ?, passport = ?, series = ?, cert_no = ?, reg_no = ?,
         score = ?, issue_date = ?, template = ?, status = ?, note = ?
       WHERE id = ?
     `).run(
@@ -883,6 +1099,7 @@ app.put('/admin/api/certificates/:id', needAuth, (req, res) => {
       String(fio).trim().toUpperCase(),
       cleanPinfl,
       passport ? String(passport).trim().toUpperCase() : null,
+      series ? String(series).trim().toUpperCase() : null,
       String(cert_no).trim(),
       String(reg_no).trim(),
       score != null && score !== '' ? parseFloat(score) : null,
@@ -919,7 +1136,7 @@ app.get('/admin/api/certificates/:id/pdf', needAuth, async (req, res) => {
 
   try {
     const cert = db.prepare(`
-      SELECT c.*, k.title, k.org_line1, k.org_line2, k.series, k.hours, 
+      SELECT c.*, k.title, k.org_line1, k.org_line2, COALESCE(c.series, k.series) as series, k.hours, 
              k.start_date, k.end_date, k.body_text, k.director, k.show_score, 
              k.accent, k.template as course_template
       FROM certificates c
@@ -935,7 +1152,7 @@ app.get('/admin/api/certificates/:id/pdf', needAuth, async (req, res) => {
     const baseUrl = getSetting('base_url') || BASE_URL;
     const html = await renderHtml(templateName, cert, baseUrl);
 
-    const isLandscape = templateName === 'diplom';
+    const isLandscape = isTemplateLandscape(templateName);
     const pdfBuffer = await generatePdf(html, isLandscape);
 
     res.setHeader('Content-Type', 'application/pdf');
@@ -1023,8 +1240,12 @@ app.post('/admin/api/import', needAuth, upload.single('file'), (req, res) => {
     }
 
     // Execute import in single transaction
+    const courseInfo = db.prepare('SELECT id, series FROM courses WHERE id = ?').get(course_id);
+    const courseSeries = courseInfo ? courseInfo.series : 'MO';
+
     const runImport = db.transaction(() => {
       let currentCertNo = null;
+      let currentRegNo = null;
 
       rows.forEach((row, index) => {
         const rowNum = index + 2; // header is row 1
@@ -1059,8 +1280,14 @@ app.post('/admin/api/import', needAuth, upload.single('file'), (req, res) => {
           certNo = certNo.padStart(6, '0');
         }
 
+        // Determine reg_no
         if (!regNo) {
-          regNo = certNo.replace(/^0+/, '') || '1';
+          if (!currentRegNo) {
+            currentRegNo = parseInt(getNextRegNo(), 10);
+          } else {
+            currentRegNo++;
+          }
+          regNo = String(currentRegNo);
         }
 
         const finalDate = rowDate || defaultDate || new Date().toISOString().split('T')[0];
@@ -1070,15 +1297,16 @@ app.post('/admin/api/import', needAuth, upload.single('file'), (req, res) => {
         try {
           db.prepare(`
             INSERT INTO certificates (
-              uid, course_id, fio, pinfl, passport, cert_no, reg_no,
+              uid, course_id, fio, pinfl, passport, series, cert_no, reg_no,
               score, issue_date, status, created_by
-            ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, 'active', ?)
+            ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 'active', ?)
           `).run(
             uid,
             course_id,
             fio.toUpperCase(),
             pinfl,
             passport ? passport.toUpperCase() : null,
+            courseSeries,
             certNo,
             regNo,
             isNaN(score) ? null : score,
@@ -1176,12 +1404,40 @@ process.on('unhandledRejection', (reason, promise) => {
   console.error('[SERVER ERROR] Unhandled Rejection:', reason);
 });
 
-// Start server
-app.listen(PORT, () => {
+// Helper to discover local IPv4 addresses (Wi-Fi / LAN)
+function getLocalNetworkIps() {
+  const os = require('os');
+  const nets = os.networkInterfaces();
+  const results = [];
+  for (const name of Object.keys(nets)) {
+    for (const net of nets[name]) {
+      if (net.family === 'IPv4' && !net.internal) {
+        results.push({ name, address: net.address });
+      }
+    }
+  }
+  return results;
+}
+
+// Start server on 0.0.0.0 to allow LAN / Wi-Fi access
+app.listen(PORT, '0.0.0.0', () => {
+  const networkIps = getLocalNetworkIps();
+  const wifiInterface = networkIps.find(i => /wi-fi|wireless|wlan/i.test(i.name)) || networkIps[0];
+  const wifiUrl = wifiInterface ? `http://${wifiInterface.address}:${PORT}` : null;
+
   console.log(`\n============================================================`);
   console.log(` SER TIZIM — Sertifikat berish va tarqatish platformasi`);
-  console.log(` Server muvaffaqiyatli ishga tushdi: ${BASE_URL}`);
-  console.log(` Ochiq sahifa (PINFL qidiruv):  ${BASE_URL}`);
-  console.log(` Administrator paneli:          ${BASE_URL}/admin`);
+  console.log(` Status: Server Wi-Fi va lokal tarmoqda muvaffaqiyatli ishga tushdi!`);
+  console.log(`------------------------------------------------------------`);
+  console.log(` 1. Shu kompyuterda ochish:`);
+  console.log(`    - Asosiy sahifa: http://localhost:${PORT}`);
+  console.log(`    - Admin panel:   http://localhost:${PORT}/admin`);
+  console.log(`------------------------------------------------------------`);
+  if (wifiUrl) {
+    console.log(` 2. Boshqa qurilmalarda (Telefon, boshqa noutbuk, planshet):`);
+    console.log(`    - Wi-Fi havola:  ${wifiUrl}`);
+    console.log(`    - Admin panel:   ${wifiUrl}/admin`);
+    console.log(`    - Tarmoq nomi:   ${wifiInterface.name} (${wifiInterface.address})`);
+  }
   console.log(`============================================================\n`);
 });

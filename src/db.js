@@ -142,19 +142,50 @@ function initDb() {
       at DATETIME DEFAULT CURRENT_TIMESTAMP,
       FOREIGN KEY (certificate_id) REFERENCES certificates(id) ON DELETE CASCADE
     );
+
+    CREATE TABLE IF NOT EXISTS custom_templates (
+      id INTEGER PRIMARY KEY AUTOINCREMENT,
+      name TEXT NOT NULL,
+      bg_image TEXT NOT NULL,
+      orientation TEXT NOT NULL DEFAULT 'landscape',
+      elements_config TEXT NOT NULL,
+      created_at DATETIME DEFAULT CURRENT_TIMESTAMP
+    );
   `);
+
+  // Migrate certificates table to have series column if missing
+  try {
+    db.exec(`ALTER TABLE certificates ADD COLUMN series TEXT;`);
+  } catch (_) {
+    // Column already exists
+  }
 
   // Default settings
   const defaultSettings = [
-    ['site_title', "O'zbekiston Respublikasi Sertifikatlar Reyestri"],
-    ['site_org', "Kadrlar malakasini oshirish va qayta tayyorlash milliy markazi"],
+    ['site_title', "Digital Education Development Center"],
+    ['site_org', "Digital Education Development Center"],
     ['base_url', process.env.BASE_URL || 'http://localhost:3000'],
-    ['logo_path', '']
+    ['logo_path', 'RTRM logo eng.png']
   ];
 
   for (const [k, v] of defaultSettings) {
     db.prepare('INSERT OR IGNORE INTO settings (key, value) VALUES (?, ?)').run(k, v);
   }
+
+  // Update legacy placeholder strings to brand name if present
+  try {
+    db.prepare(`
+      UPDATE settings 
+      SET value = 'Digital Education Development Center' 
+      WHERE key IN ('site_title', 'site_org') 
+        AND (value LIKE '%Kadrlar malakasini%' OR value LIKE '%Sertifikatlar Reyestri%')
+    `).run();
+
+    const logoSetting = db.prepare('SELECT value FROM settings WHERE key = ?').get('logo_path');
+    if (!logoSetting || !logoSetting.value) {
+      db.prepare('UPDATE settings SET value = ? WHERE key = ?').run('RTRM logo eng.png', 'logo_path');
+    }
+  } catch (_) {}
 
   // Default admin creation
   const adminCount = db.prepare('SELECT COUNT(*) as count FROM admins').get().count;
@@ -244,6 +275,25 @@ function getNextCertNo(courseId) {
   return String(num + 1).padStart(6, '0');
 }
 
+function getNextRegNo() {
+  const row = db.prepare(`
+    SELECT reg_no FROM certificates 
+    WHERE reg_no GLOB '[0-9]*'
+    ORDER BY CAST(reg_no AS INTEGER) DESC LIMIT 1
+  `).get();
+
+  if (!row || !row.reg_no) {
+    return '1001';
+  }
+
+  const num = parseInt(String(row.reg_no).replace(/\D/g, ''), 10);
+  if (isNaN(num)) {
+    return '1001';
+  }
+
+  return String(num + 1);
+}
+
 function generateUid() {
   return crypto.randomBytes(6).toString('hex'); // 12-char hex
 }
@@ -266,12 +316,40 @@ function setSetting(key, value) {
   db.prepare('INSERT OR REPLACE INTO settings (key, value) VALUES (?, ?)').run(key, value);
 }
 
+function getCustomTemplate(id) {
+  const row = db.prepare('SELECT * FROM custom_templates WHERE id = ?').get(id);
+  if (!row) return null;
+  try {
+    row.parsedConfig = JSON.parse(row.elements_config);
+  } catch (_) {
+    row.parsedConfig = {};
+  }
+  return row;
+}
+
+function getAllCustomTemplates() {
+  const rows = db.prepare('SELECT * FROM custom_templates ORDER BY id DESC').all();
+  return rows.map(r => {
+    try {
+      r.parsedConfig = JSON.parse(r.elements_config);
+    } catch (_) {
+      r.parsedConfig = {};
+    }
+    return r;
+  });
+}
+// Ensure database schema is initialized
+initDb();
+
 module.exports = {
   db,
   initDb,
   getNextCertNo,
+  getNextRegNo,
   generateUid,
   maskPinfl,
   getSetting,
-  setSetting
+  setSetting,
+  getCustomTemplate,
+  getAllCustomTemplates
 };

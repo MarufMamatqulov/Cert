@@ -3,8 +3,8 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Sertifikatlarni tekshirish va yuklab olish tizimi</title>
-  <meta name="description" content="Jismoniy shaxsning shaxsiy identifikatsion raqami (PINFL/JSHSHIR) orqali sertifikatni qidirish va rasmiy PDF nusxasini yuklab olish.">
+  <title>Digital Education Development Center</title>
+  <meta name="description" content="Digital Education Development Center — Sertifikatlarni PINFL (JSHSHIR) orqali tekshirish va yuklab olish tizimi.">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
@@ -47,7 +47,7 @@
 
     /* Navbar */
     .header-nav {
-      background: rgba(255, 255, 255, 0.85);
+      background: rgba(255, 255, 255, 0.92);
       backdrop-filter: blur(12px);
       -webkit-backdrop-filter: blur(12px);
       border-bottom: 1px solid var(--border);
@@ -59,67 +59,30 @@
     .nav-container {
       max-width: 1100px;
       margin: 0 auto;
-      padding: 14px 20px;
+      padding: 16px 20px;
       display: flex;
-      justify-content: space-between;
+      justify-content: center;
       align-items: center;
     }
 
     .brand-wrap {
-      display: flex;
-      align-items: center;
-      gap: 12px;
-      text-decoration: none;
-      color: inherit;
-    }
-
-    .brand-logo-circle {
-      width: 42px;
-      height: 42px;
-      border-radius: 10px;
-      background: linear-gradient(135deg, #1e3a8a 0%, #2563eb 100%);
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      color: white;
-      font-weight: 800;
-      font-size: 18px;
-      box-shadow: 0 4px 10px rgba(30, 58, 138, 0.2);
-    }
-
-    .brand-text h1 {
-      font-size: 16px;
-      font-weight: 800;
-      color: var(--primary);
-      letter-spacing: -0.2px;
-      line-height: 1.2;
-    }
-
-    .brand-text span {
-      font-size: 11.5px;
-      color: var(--text-muted);
-      font-weight: 500;
-    }
-
-    .admin-link {
       display: inline-flex;
       align-items: center;
-      gap: 6px;
-      padding: 8px 14px;
-      border-radius: 8px;
-      font-size: 13px;
-      font-weight: 600;
-      color: var(--text-muted);
       text-decoration: none;
-      transition: all 0.2s ease;
-      border: 1px solid var(--border);
-      background: white;
+      transition: opacity 0.2s ease, transform 0.2s ease;
     }
 
-    .admin-link:hover {
-      color: var(--primary);
-      border-color: var(--primary);
-      background: #f8fafc;
+    .brand-wrap:hover {
+      opacity: 0.92;
+      transform: scale(1.01);
+    }
+
+    .brand-logo-img {
+      height: 48px;
+      max-height: 52px;
+      width: auto;
+      object-fit: contain;
+      display: block;
     }
 
     /* Hero & Search Card */
@@ -454,8 +417,10 @@
       border-top: 1px solid var(--border);
       padding: 24px 20px;
       text-align: center;
-      font-size: 13px;
-      color: var(--text-muted);
+      font-size: 14px;
+      font-weight: 700;
+      color: var(--primary);
+      letter-spacing: 0.3px;
     }
 
     /* Spinner */
@@ -490,18 +455,8 @@
   <!-- Top Navbar -->
   <header class="header-nav">
     <div class="nav-container">
-      <a href="/" class="brand-wrap">
-        <div class="brand-logo-circle">UZ</div>
-        <div class="brand-text">
-          <h1 id="navTitle">Sertifikatlar Reyestri</h1>
-          <span id="navOrg">Davlat namunasi asosidagi rasmiy portal</span>
-        </div>
-      </a>
-      <a href="/admin/login" class="admin-link">
-        <svg width="15" height="15" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 16l-4-4m0 0l4-4m-4 4h14m-5 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h7a3 3 0 013 3v1"/>
-        </svg>
-        Admin panel
+      <a href="/" class="brand-wrap" title="Digital Education Development Center">
+        <img src="/RTRM%20logo%20eng.png" alt="Digital Education Development Center" class="brand-logo-img">
       </a>
     </div>
   </header>
@@ -509,15 +464,9 @@
   <!-- Hero & Form -->
   <main>
     <section class="hero-section">
-      <div class="hero-badge">
-        <svg width="14" height="14" fill="currentColor" viewBox="0 0 20 20">
-          <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"/>
-        </svg>
-        Rasmiy elektron reyestr
-      </div>
-      <h2 class="hero-title">Sertifikatni PINFL (JSHSHIR) orqali tekshirish va yuklab olish</h2>
+      <h2 class="hero-title">Sertifikatni tekshirish va yuklab olish</h2>
       <p class="hero-subtitle">
-        O‘zbekiston Respublikasi fuqarolik pasporti yoki ID-kartasidagi 14 xonali JSHSHIR raqamingizni kiriting va sertifikatingizni darhol PDF formatda yuklab oling.
+        PINFL (JSHSHIR) raqamingizni kiriting va sertifikatingizni darhol PDF formatda yuklab oling.
       </p>
 
       <div class="search-card">
@@ -588,8 +537,7 @@
   </main>
 
   <footer class="page-footer">
-    <div id="footerOrg">Kadrlar malakasini oshirish va qayta tayyorlash milliy markazi</div>
-    <div style="margin-top: 4px;">© 2026 Barcha huquqlar himoyalangan. Tizim davlat talablariga muvofiq ishlaydi.</div>
+    <div>Digital Education Development Center</div>
   </footer>
 
   <script>
@@ -600,9 +548,6 @@
     const btnSubmit = document.getElementById('btnSubmit');
     const btnText = document.getElementById('btnText');
     const resultsSection = document.getElementById('resultsSection');
-    const navTitle = document.getElementById('navTitle');
-    const navOrg = document.getElementById('navOrg');
-    const footerOrg = document.getElementById('footerOrg');
     const captchaImg = document.getElementById('captchaImg');
     const captchaInput = document.getElementById('captchaInput');
     const btnRefreshCaptcha = document.getElementById('btnRefreshCaptcha');
@@ -629,11 +574,6 @@
         const res = await fetch('/api/config');
         if (res.ok) {
           const data = await res.json();
-          if (data.title) navTitle.textContent = data.title;
-          if (data.org) {
-            navOrg.textContent = data.org;
-            footerOrg.textContent = data.org;
-          }
           if (Array.isArray(data.courses)) {
             data.courses.forEach(c => {
               const opt = document.createElement('option');
