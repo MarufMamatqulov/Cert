@@ -13,6 +13,7 @@ const {
   getNextCertNo,
   getNextRegNo,
   generateUid,
+  generateVerifyCode,
   maskPinfl,
   getSetting,
   setSetting,
@@ -158,7 +159,7 @@ app.get('/api/config', (req, res) => {
   }
 });
 
-// PINFL Search with 10 req/min rate limit and math captcha verification
+// 10-digit Verification Code / Certificate Number Search with rate limit and math captcha verification
 app.post('/api/search', (req, res) => {
   const ip = req.ip || req.connection.remoteAddress || 'unknown';
   if (!checkRateLimit(searchRateLimit, ip, 10, 60000)) {
@@ -167,7 +168,7 @@ app.post('/api/search', (req, res) => {
     });
   }
 
-  const { pinfl, course, captcha } = req.body;
+  const { code, pinfl, course, captcha } = req.body;
 
   // Validate math captcha
   if (!req.session.captcha || Date.now() > req.session.captcha.expires) {
@@ -187,24 +188,24 @@ app.post('/api/search', (req, res) => {
     });
   }
 
-  if (!pinfl || String(pinfl).trim().length < 4) {
-    return res.status(400).json({ error: 'JSHSHIR (PINFL) raqamini to‘liq kiriting (14 ta raqam).' });
+  const rawCode = (code || pinfl || '').toString().trim();
+  if (!rawCode || rawCode.length < 3) {
+    return res.status(400).json({ error: 'Sertifikatning 10 xonali tekshirish kodi yoki raqamini kiriting.' });
   }
 
-  const cleanPinfl = String(pinfl).replace(/\D/g, '').trim();
-  if (cleanPinfl.length !== 14) {
-    return res.status(400).json({ error: 'JSHSHIR (PINFL) 14 ta raqamdan iborat bo‘lishi kerak.' });
-  }
+  const cleanCode = rawCode.replace(/\s+/g, '');
+  const paddedCertNo = /^\d+$/.test(cleanCode) && cleanCode.length <= 6 ? cleanCode.padStart(6, '0') : cleanCode;
 
   try {
     let query = `
-      SELECT c.id, c.uid, c.fio, c.pinfl, c.cert_no, c.reg_no, c.score, c.issue_date,
-             k.title as course_title, k.series, k.hours
+      SELECT c.id, c.uid, c.fio, c.verify_code, c.cert_no, c.reg_no, c.score, c.issue_date,
+             k.title as course_title, COALESCE(c.series, k.series) as series, k.hours
       FROM certificates c
       JOIN courses k ON c.course_id = k.id
-      WHERE c.pinfl = ? AND c.status = 'active'
+      WHERE (c.verify_code = ? OR c.cert_no = ? OR c.cert_no = ? OR (COALESCE(c.series, k.series) || c.cert_no) = ? OR (COALESCE(c.series, k.series) || ' ' || c.cert_no) = ? OR c.uid = ?)
+        AND c.status = 'active'
     `;
-    const params = [cleanPinfl];
+    const params = [cleanCode, cleanCode, paddedCertNo, cleanCode, cleanCode, cleanCode];
 
     if (course && course !== 'all') {
       query += ' AND k.code = ?';
@@ -215,10 +216,10 @@ app.post('/api/search', (req, res) => {
 
     const results = db.prepare(query).all(params);
 
-    const maskedResults = results.map(row => ({
+    const searchResults = results.map(row => ({
       uid: row.uid,
       fio: row.fio,
-      pinfl: maskPinfl(row.pinfl),
+      verify_code: row.verify_code,
       course_title: row.course_title,
       series: row.series,
       cert_no: row.cert_no,
@@ -231,8 +232,8 @@ app.post('/api/search', (req, res) => {
     }));
 
     res.json({
-      count: maskedResults.length,
-      certificates: maskedResults
+      count: searchResults.length,
+      certificates: searchResults
     });
   } catch (err) {
     console.error('Search API error:', err);
@@ -507,8 +508,8 @@ app.get('/t/:uid', (req, res) => {
               <div class="info-value">${cert.series} № ${cert.cert_no}</div>
             </div>
             <div>
-              <div class="info-label">JSHSHIR (PINFL)</div>
-              <div class="info-value" style="font-family: monospace;">${maskedPinfl}</div>
+              <div class="info-label">Tekshirish kodi</div>
+              <div class="info-value" style="font-family: monospace; letter-spacing: 1px; color: #1e3a8a;">${cert.verify_code || cert.uid}</div>
             </div>
             <div>
               <div class="info-label">Berilgan sana</div>
@@ -531,7 +532,7 @@ app.get('/t/:uid', (req, res) => {
 
           <div class="footer-note">
             ${siteOrg}<br>
-            Tekshiruv kodi: <strong>${cert.uid}</strong>
+            Tekshiruv kodi: <strong>${cert.verify_code || cert.uid}</strong>
           </div>
         </div>
       </div>
@@ -631,15 +632,14 @@ app.get('/admin/api/stats', needAuth, (req, res) => {
     const total_downloads = db.prepare('SELECT COUNT(*) as c FROM downloads').get().c;
 
     const recent_certs = db.prepare(`
-      SELECT c.id, c.uid, c.fio, c.pinfl, c.cert_no, c.issue_date, c.status,
-             k.title as course_title, k.series
+      SELECT c.id, c.uid, c.fio, c.verify_code, c.cert_no, c.issue_date, c.status,
+             k.title as course_title, COALESCE(c.series, k.series) as series
       FROM certificates c
       JOIN courses k ON c.course_id = k.id
       ORDER BY c.id DESC
       LIMIT 8
     `).all().map(r => ({
       ...r,
-      pinfl: maskPinfl(r.pinfl),
       formatted_date: formatUzDate(r.issue_date)
     }));
 
@@ -784,7 +784,8 @@ app.get('/admin/api/courses/:id/next-numbers', needAuth, (req, res) => {
       series: course.series || 'MO',
       next_cert_no: nextCertNo,
       next_reg_no: nextRegNo,
-      issue_date: today
+      issue_date: today,
+      verify_code: generateVerifyCode()
     });
   } catch (err) {
     res.status(500).json({ error: err.message });
@@ -923,7 +924,8 @@ app.post('/admin/api/custom-templates/preview-pdf', needAuth, upload.single('bg_
     const mockCert = {
       uid: 'demo' + Date.now().toString(16),
       fio: req.body.sample_fio || 'ALISHER NAVOIY',
-      pinfl: '31502900000012',
+      verify_code: '8492019483',
+      pinfl: '',
       cert_no: '000123',
       reg_no: '1001',
       score: 95.0,
@@ -967,9 +969,9 @@ app.get('/admin/api/certificates', needAuth, (req, res) => {
     const params = [];
 
     if (q && q.trim()) {
-      whereClauses.push('(c.fio LIKE ? OR c.pinfl LIKE ? OR c.cert_no LIKE ? OR c.passport LIKE ?)');
+      whereClauses.push('(c.fio LIKE ? OR c.verify_code LIKE ? OR c.cert_no LIKE ? OR c.pinfl LIKE ? OR c.passport LIKE ?)');
       const term = `%${q.trim()}%`;
-      params.push(term, term, term, term);
+      params.push(term, term, term, term, term);
     }
 
     if (course && course !== 'all') {
@@ -1013,17 +1015,18 @@ app.get('/admin/api/certificates', needAuth, (req, res) => {
 app.post('/admin/api/certificates', needAuth, (req, res) => {
   const {
     course_id, fio, pinfl, passport, series, cert_no, reg_no,
-    score, issue_date, template, status, note
+    score, issue_date, template, status, note, verify_code
   } = req.body;
 
-  if (!course_id || !fio || !pinfl) {
-    return res.status(400).json({ error: 'Kurs, F.I.Sh. va PINFL kiritilishi shart.' });
+  if (!course_id || !fio) {
+    return res.status(400).json({ error: 'Kurs va Tinglovchi F.I.Sh. kiritilishi shart.' });
   }
 
-  const cleanPinfl = String(pinfl).replace(/\D/g, '').trim();
-  if (cleanPinfl.length !== 14) {
-    return res.status(400).json({ error: 'PINFL aniq 14 ta raqam bo\'lishi shart.' });
-  }
+  const cleanPinfl = pinfl ? String(pinfl).replace(/\D/g, '').trim() : '';
+  const cleanPassport = passport ? String(passport).trim().toUpperCase() : null;
+  const finalVerifyCode = (verify_code && String(verify_code).replace(/\D/g, '').length === 10)
+    ? String(verify_code).replace(/\D/g, '')
+    : generateVerifyCode();
 
   try {
     const course = db.prepare('SELECT id, series FROM courses WHERE id = ?').get(course_id);
@@ -1048,14 +1051,14 @@ app.post('/admin/api/certificates', needAuth, (req, res) => {
     const result = db.prepare(`
       INSERT INTO certificates (
         uid, course_id, fio, pinfl, passport, series, cert_no, reg_no,
-        score, issue_date, template, status, note, created_by
-      ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+        score, issue_date, template, status, note, created_by, verify_code
+      ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
     `).run(
       uid,
       course_id,
       String(fio).trim().toUpperCase(),
       cleanPinfl,
-      passport ? String(passport).trim().toUpperCase() : null,
+      cleanPassport,
       finalSeries,
       finalCertNo,
       finalRegNo,
@@ -1064,13 +1067,22 @@ app.post('/admin/api/certificates', needAuth, (req, res) => {
       template || null,
       status || 'active',
       note || null,
-      req.session.adminId
+      req.session.adminId,
+      finalVerifyCode
     );
 
-    res.json({ success: true, id: result.lastInsertRowid, uid, cert_no: finalCertNo, reg_no: finalRegNo, series: finalSeries });
+    res.json({
+      success: true,
+      id: result.lastInsertRowid,
+      uid,
+      cert_no: finalCertNo,
+      reg_no: finalRegNo,
+      series: finalSeries,
+      verify_code: finalVerifyCode
+    });
   } catch (err) {
     if (err.message.includes('UNIQUE')) {
-      return res.status(400).json({ error: 'Ushbu kursda bu sertifikat raqami allaqachon mavjud.' });
+      return res.status(400).json({ error: 'Ushbu kursda bu sertifikat raqami yoki tekshiruv kodi allaqachon mavjud.' });
     }
     res.status(500).json({ error: err.message });
   }
@@ -1080,25 +1092,32 @@ app.put('/admin/api/certificates/:id', needAuth, (req, res) => {
   const id = req.params.id;
   const {
     course_id, fio, pinfl, passport, series, cert_no, reg_no,
-    score, issue_date, template, status, note
+    score, issue_date, template, status, note, verify_code
   } = req.body;
 
-  const cleanPinfl = String(pinfl).replace(/\D/g, '').trim();
-  if (cleanPinfl.length !== 14) {
-    return res.status(400).json({ error: 'PINFL 14 ta raqam bo\'lishi shart.' });
+  if (!course_id || !fio) {
+    return res.status(400).json({ error: 'Kurs va Tinglovchi F.I.Sh. kiritilishi shart.' });
   }
 
+  const cleanPinfl = pinfl ? String(pinfl).replace(/\D/g, '').trim() : '';
+  const cleanPassport = passport ? String(passport).trim().toUpperCase() : null;
+
   try {
+    const existingCert = db.prepare('SELECT verify_code FROM certificates WHERE id = ?').get(id);
+    const finalVerifyCode = (verify_code && String(verify_code).replace(/\D/g, '').length === 10)
+      ? String(verify_code).replace(/\D/g, '')
+      : (existingCert && existingCert.verify_code ? existingCert.verify_code : generateVerifyCode());
+
     db.prepare(`
       UPDATE certificates SET
         course_id = ?, fio = ?, pinfl = ?, passport = ?, series = ?, cert_no = ?, reg_no = ?,
-        score = ?, issue_date = ?, template = ?, status = ?, note = ?
+        score = ?, issue_date = ?, template = ?, status = ?, note = ?, verify_code = ?
       WHERE id = ?
     `).run(
       course_id,
       String(fio).trim().toUpperCase(),
       cleanPinfl,
-      passport ? String(passport).trim().toUpperCase() : null,
+      cleanPassport,
       series ? String(series).trim().toUpperCase() : null,
       String(cert_no).trim(),
       String(reg_no).trim(),
@@ -1107,10 +1126,11 @@ app.put('/admin/api/certificates/:id', needAuth, (req, res) => {
       template || null,
       status || 'active',
       note || null,
+      finalVerifyCode,
       id
     );
 
-    res.json({ success: true });
+    res.json({ success: true, verify_code: finalVerifyCode });
   } catch (err) {
     if (err.message.includes('UNIQUE')) {
       return res.status(400).json({ error: 'Bu sertifikat raqami kurs ichida band.' });
@@ -1262,9 +1282,9 @@ app.post('/admin/api/import', needAuth, upload.single('file'), (req, res) => {
           return;
         }
 
-        if (!pinfl || pinfl.length !== 14) {
-          errors.push({ row: rowNum, error: `PINFL xato (14 ta raqam bo'lishi kerak): "${pinfl}"` });
-          return;
+        let verifyCode = getColValue(row, ['Tekshirish kodi', 'Verify Code', 'Kodi', 'Kod']).replace(/\D/g, '');
+        if (verifyCode.length !== 10) {
+          verifyCode = generateVerifyCode();
         }
 
         // Determine cert_no
@@ -1298,24 +1318,25 @@ app.post('/admin/api/import', needAuth, upload.single('file'), (req, res) => {
           db.prepare(`
             INSERT INTO certificates (
               uid, course_id, fio, pinfl, passport, series, cert_no, reg_no,
-              score, issue_date, status, created_by
-            ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 'active', ?)
+              score, issue_date, status, created_by, verify_code
+            ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 'active', ?, ?)
           `).run(
             uid,
             course_id,
             fio.toUpperCase(),
-            pinfl,
+            pinfl || '',
             passport ? passport.toUpperCase() : null,
             courseSeries,
             certNo,
             regNo,
             isNaN(score) ? null : score,
             finalDate,
-            req.session.adminId
+            req.session.adminId,
+            verifyCode
           );
           successCount++;
         } catch (dbErr) {
-          errors.push({ row: rowNum, error: dbErr.message.includes('UNIQUE') ? 'Sertifikat raqami takrorlandi' : dbErr.message });
+          errors.push({ row: rowNum, error: dbErr.message.includes('UNIQUE') ? 'Sertifikat raqami yoki tekshirish kodi takrorlandi' : dbErr.message });
         }
       });
     });

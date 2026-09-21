@@ -1047,7 +1047,7 @@
                 <tr>
                   <th>Seriya & Raqam</th>
                   <th>F.I.Sh.</th>
-                  <th>PINFL</th>
+                  <th>Tekshirish kodi</th>
                   <th>Kurs</th>
                   <th>Sana</th>
                   <th>Holat</th>
@@ -1076,7 +1076,7 @@
           <div class="filters-bar">
             <div class="search-box">
               <svg class="search-icon" width="16" height="16" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/></svg>
-              <input type="text" id="certSearchQuery" class="search-input" placeholder="F.I.Sh., PINFL yoki raqam bo‘yicha qidiruv...">
+              <input type="text" id="certSearchQuery" class="search-input" placeholder="F.I.Sh., 10 xonali kod yoki sertifikat raqami bo‘yicha qidiruv...">
             </div>
             <select id="certCourseFilter" class="filter-select">
               <option value="all">Barcha kurslar</option>
@@ -1090,7 +1090,7 @@
                   <th>№</th>
                   <th>Seriya / Raqam</th>
                   <th>F.I.Sh.</th>
-                  <th>PINFL</th>
+                  <th>Tekshirish kodi</th>
                   <th>Kurs</th>
                   <th>Ball</th>
                   <th>Sana</th>
@@ -1196,8 +1196,7 @@
               <strong style="color: #0f172a;">Jadval ustunlari talabi:</strong>
               <ul style="margin-left: 20px; margin-top: 6px;">
                 <li><code>FIO</code> yoki <code>FISH</code> (Ism-familiya) — <em>majburiy</em></li>
-                <li><code>PINFL</code> yoki <code>JSHSHIR</code> (14 ta raqam) — <em>majburiy</em></li>
-                <li><code>Pasport</code> (AA1234567) — <em>ixtiyoriy</em></li>
+                <li><code>Tekshirish kodi</code> (10 xonali) — <em>bo‘sh qoldirilsa avtomatik 10 ta random raqam beriladi</em></li>
                 <li><code>Sertifikat raqami</code> — <em>bo‘sh qoldirilsa avtomatik tartib bilan beriladi</em></li>
                 <li><code>Qayd raqami</code>, <code>Ball</code>, <code>Sana</code> — <em>ixtiyoriy</em></li>
               </ul>
@@ -1298,16 +1297,21 @@
           <input type="text" id="certFio" class="form-input" placeholder="ALIMOV BEHZOD SHAVKATOVICH" required>
         </div>
 
-        <div class="form-grid-2">
-          <div class="form-control-group">
-            <label class="form-label" for="certPinfl">PINFL / JSHSHIR (14 raqam): *</label>
-            <input type="text" id="certPinfl" class="form-input" placeholder="14 ta raqam" maxlength="14" required>
+        <div class="form-control-group">
+          <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 4px;">
+            <label class="form-label" for="certVerifyCode" style="margin-bottom: 0;">10 xonali tekshirish kodi: *</label>
+            <button type="button" onclick="generateNewVerifyCodeForModal()" style="background: none; border: none; color: #2563eb; font-size: 11.5px; cursor: pointer; text-decoration: underline; padding: 0;">🔄 Yangi kod yaratish</button>
           </div>
-          <div class="form-control-group">
-            <label class="form-label" for="certPassport">Pasport seriya va raqam:</label>
-            <input type="text" id="certPassport" class="form-input" placeholder="AA1234567">
+          <div style="position: relative;">
+            <input type="text" id="certVerifyCode" class="form-input" placeholder="Masalan: 8492019483" maxlength="10" style="font-family: monospace; font-weight: 700; font-size: 15px; letter-spacing: 1px;" required>
+            <span style="position: absolute; right: 8px; top: 50%; transform: translateY(-50%); font-size: 11px; background: #e2e8f0; padding: 2px 6px; border-radius: 4px; color: #475569; pointer-events: none;">Avto</span>
           </div>
+          <small style="font-size: 11.5px; color: #64748b; margin-top: 4px; display: block;">Ushbu 10 xonali tasodifiy kod orqali istalgan foydalanuvchi sertifikatni tekshira oladi (pasport/JSHSHIR talab qilinmaydi).</small>
         </div>
+
+        <!-- Hidden inputs for backward compatibility -->
+        <input type="hidden" id="certPinfl" value="">
+        <input type="hidden" id="certPassport" value="">
 
         <div style="display: grid; grid-template-columns: 110px 1fr 1fr; gap: 12px; margin-bottom: 14px;">
           <div class="form-control-group" style="margin-bottom: 0;">
@@ -1550,6 +1554,7 @@
               <button type="button" class="element-chip active" data-el="fio" onclick="selectCanvasElement('fio')">👤 F.I.Sh.</button>
               <button type="button" class="element-chip" data-el="qr" onclick="selectCanvasElement('qr')">📱 QR-kod</button>
               <button type="button" class="element-chip" data-el="certNo" onclick="selectCanvasElement('certNo')">🔢 Seriya №</button>
+              <button type="button" class="element-chip" data-el="verifyCode" onclick="selectCanvasElement('verifyCode')">🔑 Tekshiruv kodi</button>
               <button type="button" class="element-chip" data-el="regNo" onclick="selectCanvasElement('regNo')">🏷️ Qayd №</button>
               <button type="button" class="element-chip" data-el="courseTitle" onclick="selectCanvasElement('courseTitle')">📚 Kurs nomi</button>
               <button type="button" class="element-chip" data-el="bodyText" onclick="selectCanvasElement('bodyText')">📝 Asosiy matn</button>
@@ -1844,7 +1849,7 @@
           <tr>
             <td><strong>${c.series} № ${c.cert_no}</strong></td>
             <td><strong>${c.fio}</strong></td>
-            <td style="font-family: monospace;">${c.pinfl}</td>
+            <td style="font-family: monospace; font-weight: 600; color: #1e3a8a;">${c.verify_code || '-'}</td>
             <td>${c.course_title}</td>
             <td>${c.formatted_date}</td>
             <td><span class="status-tag ${c.status}">${c.status === 'active' ? 'Faol' : 'Bekor qilingan'}</span></td>
@@ -1886,7 +1891,7 @@
             <td>${(certPage - 1) * 25 + idx + 1}</td>
             <td><strong>${c.series} № ${c.cert_no}</strong></td>
             <td><strong>${c.fio}</strong></td>
-            <td style="font-family: monospace;">${c.pinfl}</td>
+            <td style="font-family: monospace; font-weight: 600; color: #1e3a8a;">${c.verify_code || '-'}</td>
             <td>${c.course_title}</td>
             <td>${c.score != null ? c.score : '—'}</td>
             <td>${c.issue_date}</td>
@@ -1935,6 +1940,12 @@
     }
 
     // Cert Modal
+    function generateNewVerifyCodeForModal() {
+      const code = Math.floor(1000000000 + Math.random() * 9000000000).toString();
+      const vInput = document.getElementById('certVerifyCode');
+      if (vInput) vInput.value = code;
+    }
+
     async function refreshCertNextNumbers(courseId = null) {
       const cId = courseId || document.getElementById('certCourseId').value;
       if (!cId) return;
@@ -1946,11 +1957,15 @@
           const noInput = document.getElementById('certNo');
           const regInput = document.getElementById('certRegNo');
           const dateInput = document.getElementById('certDate');
+          const verifyInput = document.getElementById('certVerifyCode');
 
           if (seriesInput) seriesInput.value = data.series || 'MO';
           if (noInput) noInput.value = data.next_cert_no || '000001';
           if (regInput) regInput.value = data.next_reg_no || '1001';
           if (dateInput && !dateInput.value) dateInput.value = data.issue_date || new Date().toISOString().split('T')[0];
+          if (verifyInput && (!verifyInput.value || !document.getElementById('certEditId').value)) {
+            verifyInput.value = data.verify_code || '';
+          }
         }
       } catch (err) {
         console.error('Error fetching next numbers:', err);
@@ -1964,8 +1979,6 @@
       const selectedCourseId = cert ? cert.course_id : (coursesList[0] ? coursesList[0].id : '');
       document.getElementById('certCourseId').value = selectedCourseId;
       document.getElementById('certFio').value = cert ? cert.fio : '';
-      document.getElementById('certPinfl').value = cert ? cert.pinfl : '';
-      document.getElementById('certPassport').value = cert ? (cert.passport || '') : '';
       document.getElementById('certScore').value = cert && cert.score != null ? cert.score : '';
       document.getElementById('certDate').value = cert ? cert.issue_date : new Date().toISOString().split('T')[0];
       document.getElementById('certTemplate').value = cert ? (cert.template || '') : '';
@@ -1976,8 +1989,13 @@
         document.getElementById('certSeries').value = cert.series || 'MO';
         document.getElementById('certNo').value = cert.cert_no || '';
         document.getElementById('certRegNo').value = cert.reg_no || '';
+        document.getElementById('certVerifyCode').value = cert.verify_code || '';
       } else {
+        document.getElementById('certVerifyCode').value = '';
         await refreshCertNextNumbers(selectedCourseId);
+        if (!document.getElementById('certVerifyCode').value) {
+          generateNewVerifyCodeForModal();
+        }
       }
 
       document.getElementById('certModal').classList.add('active');
@@ -2020,11 +2038,17 @@
     document.getElementById('certForm').addEventListener('submit', async (e) => {
       e.preventDefault();
       const id = document.getElementById('certEditId').value;
+      const verifyCode = document.getElementById('certVerifyCode').value.replace(/\D/g, '').trim();
+
+      if (verifyCode.length !== 10) {
+        showToast('10 xonali tekshirish kodi aniq 10 ta raqam bo‘lishi kerak!', 'error');
+        return;
+      }
+
       const payload = {
         course_id: document.getElementById('certCourseId').value,
         fio: document.getElementById('certFio').value.trim(),
-        pinfl: document.getElementById('certPinfl').value.replace(/\D/g, '').trim(),
-        passport: document.getElementById('certPassport').value.trim(),
+        verify_code: verifyCode,
         series: document.getElementById('certSeries').value.trim().toUpperCase(),
         cert_no: document.getElementById('certNo').value.trim(),
         reg_no: document.getElementById('certRegNo').value.trim(),
@@ -2034,11 +2058,6 @@
         status: document.getElementById('certStatus').value,
         note: document.getElementById('certNote').value.trim()
       };
-
-      if (payload.pinfl.length !== 14) {
-        showToast('PINFL aniq 14 ta raqam bo‘lishi kerak!', 'error');
-        return;
-      }
 
       const method = id ? 'PUT' : 'POST';
       const url = id ? `/admin/api/certificates/${id}` : '/admin/api/certificates';
@@ -2510,6 +2529,18 @@
         textAlign: 'right',
         visible: true,
         sample: 'MO № 000123'
+      },
+      verifyCode: {
+        label: 'Tekshirish kodi',
+        x: 88,
+        y: 75,
+        fontSize: 12,
+        fontFamily: 'Plus Jakarta Sans',
+        fontWeight: 'bold',
+        color: '#1e3a8a',
+        textAlign: 'right',
+        visible: false,
+        sample: 'Kod: 8492019483'
       },
       issueDate: {
         label: 'Berilgan sana',

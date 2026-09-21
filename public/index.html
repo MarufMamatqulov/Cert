@@ -466,7 +466,7 @@
     <section class="hero-section">
       <h2 class="hero-title">Sertifikatni tekshirish va yuklab olish</h2>
       <p class="hero-subtitle">
-        PINFL (JSHSHIR) raqamingizni kiriting va sertifikatingizni darhol PDF formatda yuklab oling.
+        Sertifikatdagi 10 xonali tekshirish kodi yoki sertifikat raqamini kiriting va sertifikatingizni darhol PDF formatda yuklab oling.
       </p>
 
       <div class="search-card">
@@ -479,21 +479,21 @@
           </div>
 
           <div class="form-group">
-            <label class="form-label" for="pinflInput">Jismoniy shaxsning shaxsiy identifikatsion raqami (PINFL / JSHSHIR):</label>
+            <label class="form-label" for="pinflInput">Sertifikatning 10 xonali tekshirish kodi (yoki sertifikat raqami):</label>
             <div class="pinfl-input-wrap">
               <input 
                 type="text" 
                 id="pinflInput" 
                 class="form-input pinfl-input" 
-                placeholder="14 ta raqamni kiriting..." 
-                maxlength="14" 
+                placeholder="Masalan: 8492019483" 
+                maxlength="20" 
                 autocomplete="off"
                 required
               >
             </div>
             <div class="pinfl-helper">
-              <span>Faqat 14 ta raqam</span>
-              <span id="pinflCounter">0 / 14</span>
+              <span>10 xonali tekshiruv kodi yoki sertifikat №</span>
+              <span id="pinflCounter">0 belgi</span>
             </div>
           </div>
 
@@ -589,12 +589,11 @@
     }
     loadConfig();
 
-    // PINFL input restrictions & counter
+    // Verification code input restrictions & counter
     pinflInput.addEventListener('input', (e) => {
-      const clean = e.target.value.replace(/\D/g, '').slice(0, 14);
-      e.target.value = clean;
-      pinflCounter.textContent = `${clean.length} / 14`;
-      if (clean.length === 14) {
+      const val = e.target.value.trim();
+      pinflCounter.textContent = `${val.length} ta belgi`;
+      if (val.length >= 6) {
         pinflCounter.style.color = '#16a34a';
         pinflCounter.style.fontWeight = '700';
       } else {
@@ -607,12 +606,12 @@
     searchForm.addEventListener('submit', async (e) => {
       e.preventDefault();
 
-      const pinfl = pinflInput.value.replace(/\D/g, '').trim();
+      const code = pinflInput.value.trim();
       const course = courseSelect.value;
       const captcha = captchaInput.value.trim();
 
-      if (pinfl.length !== 14) {
-        showError('JSHSHIR (PINFL) to‘liq 14 ta raqamdan iborat bo‘lishi kerak.');
+      if (code.length < 3) {
+        showError('Iltimos, sertifikatning 10 xonali tekshirish kodini yoki sertifikat raqamini kiriting.');
         pinflInput.focus();
         return;
       }
@@ -631,7 +630,7 @@
         const res = await fetch('/api/search', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ pinfl, course, captcha })
+          body: JSON.stringify({ code, course, captcha })
         });
 
         const data = await res.json();
@@ -690,7 +689,7 @@
             <path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z" clip-rule="evenodd"/>
           </svg>
           <div>
-            <strong>Sertifikat topilmadi:</strong> Ushbu PINFL raqami bo‘yicha tizimda faol sertifikat mavjud emas. Iltimos, raqamni to‘g‘ri kiritganingizni yoki boshqa sertifikat turini tanlab tekshirib ko‘ring.
+            <strong>Sertifikat topilmadi:</strong> Ushbu tekshirish kodi yoki sertifikat raqami bo‘yicha tizimda faol sertifikat topilmadi. Iltimos, kodni to‘g‘ri kiritganingizni yoki boshqa sertifikat turini tanlab tekshirib ko‘ring.
           </div>
         </div>
       `;
@@ -721,8 +720,8 @@
                 <div class="meta-item-value">${cert.fio}</div>
               </div>
               <div>
-                <div class="meta-item-label">PINFL</div>
-                <div class="meta-item-value" style="font-family: monospace;">${cert.pinfl}</div>
+                <div class="meta-item-label">Tekshirish kodi</div>
+                <div class="meta-item-value" style="font-family: monospace; letter-spacing: 1px; color: var(--primary);">${cert.verify_code || cert.uid}</div>
               </div>
               <div>
                 <div class="meta-item-label">Berilgan sana</div>

@@ -153,12 +153,22 @@ function initDb() {
     );
   `);
 
-  // Migrate certificates table to have series column if missing
+  // Migrate certificates table to have series and verify_code columns if missing
   try {
     db.exec(`ALTER TABLE certificates ADD COLUMN series TEXT;`);
   } catch (_) {
     // Column already exists
   }
+
+  try {
+    db.exec(`ALTER TABLE certificates ADD COLUMN verify_code TEXT;`);
+  } catch (_) {
+    // Column already exists
+  }
+
+  try {
+    db.exec(`CREATE UNIQUE INDEX IF NOT EXISTS idx_certificates_verify_code ON certificates(verify_code);`);
+  } catch (_) {}
 
   // Default settings
   const defaultSettings = [
@@ -254,6 +264,18 @@ function initDb() {
 
     console.log('[SEED] Namunaviy kurs va sertifikat yaratildi (PINFL: 31502900000012)');
   }
+
+  // Backfill verify_code for existing certificates if missing
+  try {
+    const missing = db.prepare("SELECT id FROM certificates WHERE verify_code IS NULL OR verify_code = ''").all();
+    if (missing && missing.length > 0) {
+      const updateStmt = db.prepare('UPDATE certificates SET verify_code = ? WHERE id = ?');
+      for (const row of missing) {
+        updateStmt.run(generateVerifyCode(), row.id);
+      }
+      console.log(`[DB] ${missing.length} ta sertifikatga 10 xonali tekshirish kodi berildi.`);
+    }
+  } catch (_) {}
 }
 
 function getNextCertNo(courseId) {
@@ -338,6 +360,16 @@ function getAllCustomTemplates() {
     return r;
   });
 }
+function generateVerifyCode() {
+  while (true) {
+    const code = Math.floor(1000000000 + Math.random() * 9000000000).toString();
+    const existing = db.prepare('SELECT id FROM certificates WHERE verify_code = ?').get(code);
+    if (!existing) {
+      return code;
+    }
+  }
+}
+
 // Ensure database schema is initialized
 initDb();
 
@@ -347,6 +379,7 @@ module.exports = {
   getNextCertNo,
   getNextRegNo,
   generateUid,
+  generateVerifyCode,
   maskPinfl,
   getSetting,
   setSetting,
