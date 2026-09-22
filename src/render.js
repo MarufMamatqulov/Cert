@@ -58,18 +58,18 @@ function formatDotDate(dateInput) {
  * Get code line to display under QR code
  */
 function getQrCodeLine(certData, codeType = 'verify_code') {
+  if (codeType === 'none') return '';
   const vCode = certData.verify_code ? String(certData.verify_code).trim() : '';
   const seriesNo = `${certData.series ? certData.series + ' ' : ''}${certData.cert_no || ''}`.trim();
 
-  if (codeType === 'none') return '';
-  if (codeType === 'cert_no') return seriesNo || vCode || 'MO 000001';
   if (codeType === 'both') {
     if (vCode && seriesNo) {
       return `${vCode}<br><span style="font-weight: 500; font-size: 0.9em;">${seriesNo}</span>`;
     }
     return vCode || seriesNo;
   }
-  // Default: 10 xonali tekshirish kodi (masalan: 8492019483)
+
+  // QR-kod tagida har doim 10 xonali tekshirish kodi chiqadi
   return vCode || seriesNo || '8492019483';
 }
 
