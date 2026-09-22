@@ -1196,6 +1196,7 @@ app.post('/admin/api/preview', needAuth, async (req, res) => {
     const mockCert = {
       uid: 'demo12345678',
       fio: courseData.sample_fio || 'ALIMOV BEHZOD SHAVKATOVICH',
+      verify_code: '8492019483',
       pinfl: '31502900000012',
       cert_no: '000001',
       reg_no: '1001',

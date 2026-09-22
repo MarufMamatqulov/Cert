@@ -57,20 +57,20 @@ function formatDotDate(dateInput) {
 /**
  * Get code line to display under QR code
  */
-function getQrCodeLine(certData, codeType = 'cert_no') {
+function getQrCodeLine(certData, codeType = 'verify_code') {
+  const vCode = certData.verify_code ? String(certData.verify_code).trim() : '';
   const seriesNo = `${certData.series ? certData.series + ' ' : ''}${certData.cert_no || ''}`.trim();
-  const vCode = certData.verify_code ? String(certData.verify_code) : '';
 
   if (codeType === 'none') return '';
-  if (codeType === 'verify_code') return vCode ? `Kod: ${vCode}` : seriesNo;
+  if (codeType === 'cert_no') return seriesNo || vCode || 'MO 000001';
   if (codeType === 'both') {
-    if (seriesNo && vCode) {
-      return `${seriesNo}<br><span style="font-weight: 600; font-size: 0.9em;">Kod: ${vCode}</span>`;
+    if (vCode && seriesNo) {
+      return `${vCode}<br><span style="font-weight: 500; font-size: 0.9em;">${seriesNo}</span>`;
     }
-    return seriesNo || vCode;
+    return vCode || seriesNo;
   }
-  // Default: cert_no (e.g. 5MP 0223485 or MO 000001)
-  return seriesNo || (vCode ? `Kod: ${vCode}` : 'MO 000001');
+  // Default: 10 xonali tekshirish kodi (masalan: 8492019483)
+  return vCode || seriesNo || '8492019483';
 }
 
 /**
@@ -400,7 +400,7 @@ async function renderCustomHtml(customTpl, certData, baseUrl) {
     ${(cfg.verifyCode && cfg.verifyCode.visible !== false && certData.verify_code) ? `<div style="${getStyle(cfg.verifyCode)}">Kod: ${certData.verify_code}</div>` : ''}
     ${(cfg.qr && cfg.qr.visible !== false) ? (() => {
       const qrSize = cfg.qr.size || 90;
-      const codeType = cfg.qr.codeType || 'cert_no';
+      const codeType = cfg.qr.codeType || 'verify_code';
       const codeLine = getQrCodeLine(certData, codeType);
       const dotDate = formatDotDate(certData.issue_date || new Date());
       const showMeta = codeType !== 'none';
@@ -483,7 +483,7 @@ async function renderHtml(templateName, certData, baseUrl) {
 
   const accentColor = certData.accent || '#1a56db';
 
-  const qrCodeLine = `${certData.series ? certData.series + ' ' : ''}${certData.cert_no || ''}`.trim() || (certData.verify_code ? `Kod: ${certData.verify_code}` : 'MO 000001');
+  const qrCodeLine = getQrCodeLine(certData, 'verify_code');
   const qrDateLine = formatDotDate(certData.issue_date || new Date());
 
   // Replacements dictionary
