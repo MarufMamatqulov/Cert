@@ -525,14 +525,17 @@ async function generatePdf(html, isLandscape = false) {
 
   try {
     await page.setContent(html, {
-      waitUntil: 'load',
-      timeout: 30000
+      waitUntil: 'domcontentloaded',
+      timeout: 10000
     });
 
-    // Wait for images and fonts to be ready
+    // Wait for images and fonts to be ready with a 1.2s timeout so it never hangs
     await page.evaluate(async () => {
       if (document.fonts) {
-        await document.fonts.ready;
+        await Promise.race([
+          document.fonts.ready,
+          new Promise(r => setTimeout(r, 1200))
+        ]);
       }
     });
 

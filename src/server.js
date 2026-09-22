@@ -74,8 +74,8 @@ setInterval(() => {
 }, 300000);
 
 // Middleware
-app.use(express.json({ limit: '10mb' }));
-app.use(express.urlencoded({ extended: true, limit: '10mb' }));
+app.use(express.json({ limit: '50mb' }));
+app.use(express.urlencoded({ extended: true, limit: '50mb' }));
 
 app.use(session({
   secret: process.env.SESSION_SECRET || 'sertifikat-maxfiy-kalit-2026-xavfsiz',
@@ -106,7 +106,7 @@ const storage = multer.diskStorage({
 
 const upload = multer({
   storage,
-  limits: { fileSize: 10 * 1024 * 1024 } // 10MB
+  limits: { fileSize: 50 * 1024 * 1024 } // 50MB
 });
 
 // Admin authentication middleware
@@ -1439,6 +1439,21 @@ function getLocalNetworkIps() {
   }
   return results;
 }
+
+// Error handling middleware (catches Multer file size errors etc.)
+app.use((err, req, res, next) => {
+  if (err instanceof multer.MulterError) {
+    if (err.code === 'LIMIT_FILE_SIZE') {
+      return res.status(400).json({ error: 'Fayl hajmi 50MB dan oshmasligi kerak.' });
+    }
+    return res.status(400).json({ error: 'Yuklashda xatolik: ' + err.message });
+  }
+  if (err) {
+    console.error('Server error:', err);
+    return res.status(500).json({ error: err.message || 'Serverda xatolik yuz berdi.' });
+  }
+  next();
+});
 
 // Start server on 0.0.0.0 to allow LAN / Wi-Fi access
 app.listen(PORT, '0.0.0.0', () => {

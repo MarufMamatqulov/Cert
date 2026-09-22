@@ -3222,6 +3222,49 @@
       });
     }
 
+    async function compressImageIfNeeded(file, maxDimension = 2500, quality = 0.92) {
+      if (!file || file.size <= 2 * 1024 * 1024) {
+        return file;
+      }
+      return new Promise((resolve) => {
+        const img = new Image();
+        const reader = new FileReader();
+        reader.onload = (e) => {
+          img.onload = () => {
+            let width = img.width;
+            let height = img.height;
+            if (width > maxDimension || height > maxDimension) {
+              if (width > height) {
+                height = Math.round((height * maxDimension) / width);
+                width = maxDimension;
+              } else {
+                width = Math.round((width * maxDimension) / height);
+                height = maxDimension;
+              }
+            }
+            const canvas = document.createElement('canvas');
+            canvas.width = width;
+            canvas.height = height;
+            const ctx = canvas.getContext('2d');
+            ctx.drawImage(img, 0, 0, width, height);
+
+            const mime = file.type === 'image/png' ? 'image/png' : 'image/jpeg';
+            canvas.toBlob((blob) => {
+              if (blob && blob.size < file.size) {
+                resolve(new File([blob], file.name, { type: mime }));
+              } else {
+                resolve(file);
+              }
+            }, mime, quality);
+          };
+          img.onerror = () => resolve(file);
+          img.src = e.target.result;
+        };
+        reader.onerror = () => resolve(file);
+        reader.readAsDataURL(file);
+      });
+    }
+
     async function saveDesignerTemplate() {
       const name = document.getElementById('dtplName').value.trim();
       const orientation = document.getElementById('dtplOrientation').value;
@@ -3238,43 +3281,60 @@
         return;
       }
 
-      const btn = document.getElementById('btnSaveDesignerTemplate');
-      btn.disabled = true;
-      btn.textContent = 'Saqlanmoqda...';
-
-      const fd = new FormData();
-      fd.append('name', name);
-      fd.append('orientation', orientation);
-      fd.append('elements_config', JSON.stringify(designerElementsConfig));
-
-      if (fileInput.files[0]) {
-        fd.append('bg_image', fileInput.files[0]);
-      }
+      const btnSave = document.getElementById('btnSaveDesignerTemplate');
+      const btnPreview = document.getElementById('btnPreviewTestPdf');
+      btnSave.disabled = true;
+      btnPreview.disabled = true;
+      btnSave.innerHTML = '<span class="spinner"></span> Saqlanmoqda...';
 
       try {
+        const fd = new FormData();
+        fd.append('name', name);
+        fd.append('orientation', orientation);
+        fd.append('elements_config', JSON.stringify(designerElementsConfig));
+
+        if (fileInput.files[0]) {
+          const optimizedFile = await compressImageIfNeeded(fileInput.files[0]);
+          fd.append('bg_image', optimizedFile, fileInput.files[0].name);
+        }
+
         const url = currentDesignerTplId 
           ? `/admin/api/custom-templates/${currentDesignerTplId}` 
           : '/admin/api/custom-templates';
         const method = currentDesignerTplId ? 'PUT' : 'POST';
 
+        const controller = new AbortController();
+        const timeoutId = setTimeout(() => controller.abort(), 30000);
+
         const res = await fetch(url, {
           method,
-          body: fd
+          body: fd,
+          signal: controller.signal
         });
+        clearTimeout(timeoutId);
 
-        const data = await res.json();
+        let data = {};
+        try {
+          data = await res.json();
+        } catch (_) {}
+
         if (res.ok) {
           showToast(currentDesignerTplId ? 'Shablon yangilandi!' : 'Yangi shablon muvaffaqiyatli saqlandi!');
           closeDesignerModal();
           await loadCustomTemplates();
         } else {
-          showToast(data.error || 'Saqlashda xatolik', 'error');
+          showToast(data.error || 'Saqlashda xatolik yuz berdi (' + res.status + ')', 'error');
         }
       } catch (err) {
-        showToast('Server bilan bog‘lanishda xatolik', 'error');
+        if (err.name === 'AbortError') {
+          showToast('So‘rov vaqti tugadi (Timeout). Qayta urinib ko‘ring.', 'error');
+        } else {
+          showToast('Server bilan bog‘lanishda xatolik: ' + err.message, 'error');
+        }
       } finally {
-        btn.disabled = false;
-        btn.textContent = '✓ Shablonni saqlash';
+        btnSave.disabled = false;
+        btnPreview.disabled = false;
+        btnSave.textContent = '✓ Shablonni saqlash';
       }
     }
 
@@ -3282,29 +3342,40 @@
       const orientation = document.getElementById('dtplOrientation').value;
       const fileInput = document.getElementById('dtplBgFile');
 
-      const btn = document.getElementById('btnPreviewTestPdf');
-      btn.disabled = true;
-      btn.innerHTML = '<span class="spinner"></span> Generatsiya qilinmoqda...';
-
-      const fd = new FormData();
-      fd.append('orientation', orientation);
-      fd.append('elements_config', JSON.stringify(designerElementsConfig));
-      if (designerExistingBg) {
-        fd.append('existing_bg', designerExistingBg);
-      }
-      if (fileInput.files[0]) {
-        fd.append('bg_image', fileInput.files[0]);
-      }
+      const btnSave = document.getElementById('btnSaveDesignerTemplate');
+      const btnPreview = document.getElementById('btnPreviewTestPdf');
+      btnSave.disabled = true;
+      btnPreview.disabled = true;
+      btnPreview.innerHTML = '<span class="spinner"></span> Generatsiya qilinmoqda...';
 
       try {
+        const fd = new FormData();
+        fd.append('orientation', orientation);
+        fd.append('elements_config', JSON.stringify(designerElementsConfig));
+        if (designerExistingBg) {
+          fd.append('existing_bg', designerExistingBg);
+        }
+        if (fileInput.files[0]) {
+          const optimizedFile = await compressImageIfNeeded(fileInput.files[0]);
+          fd.append('bg_image', optimizedFile, fileInput.files[0].name);
+        }
+
+        const controller = new AbortController();
+        const timeoutId = setTimeout(() => controller.abort(), 30000);
+
         const res = await fetch('/admin/api/custom-templates/preview-pdf', {
           method: 'POST',
-          body: fd
+          body: fd,
+          signal: controller.signal
         });
+        clearTimeout(timeoutId);
 
         if (!res.ok) {
-          const errText = await res.text();
-          showToast('Sinov PDF xatosi: ' + errText, 'error');
+          let errText = '';
+          try {
+            errText = await res.text();
+          } catch (_) {}
+          showToast('Sinov PDF xatosi: ' + (errText || res.statusText), 'error');
           return;
         }
 
@@ -3319,10 +3390,15 @@
         window.URL.revokeObjectURL(url);
         showToast('Sinov PDF yuklab olindi!');
       } catch (err) {
-        showToast('PDF generatsiyasida xatolik', 'error');
+        if (err.name === 'AbortError') {
+          showToast('PDF generatsiyasi vaqti tugadi (Timeout).', 'error');
+        } else {
+          showToast('PDF generatsiyasida xatolik: ' + err.message, 'error');
+        }
       } finally {
-        btn.disabled = false;
-        btn.innerHTML = '<svg width="16" height="16" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/></svg> <span>PDF Sinov yuklab olish</span>';
+        btnSave.disabled = false;
+        btnPreview.disabled = false;
+        btnPreview.innerHTML = '<svg width="16" height="16" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/></svg> <span>PDF Sinov yuklab olish</span>';
       }
     }
 
