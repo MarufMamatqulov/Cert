@@ -1,3 +1,8 @@
+// Enable BigInt JSON serialization
+if (typeof BigInt.prototype.toJSON !== 'function') {
+  BigInt.prototype.toJSON = function() { return Number(this); };
+}
+
 const express = require('express');
 const session = require('express-session');
 const path = require('path');

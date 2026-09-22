@@ -18,6 +18,26 @@ const dbPath = path.join(dataDir, 'sertifikat.db');
 
 let db;
 
+// Allow BigInt values to be cleanly serialized to JSON (prevent TypeError: Do not know how to serialize a BigInt)
+if (typeof BigInt.prototype.toJSON !== 'function') {
+  BigInt.prototype.toJSON = function() { return Number(this); };
+}
+
+function normalizeSqliteValue(val) {
+  if (typeof val === 'bigint') return Number(val);
+  return val;
+}
+
+function normalizeSqliteRow(row) {
+  if (!row || typeof row !== 'object') return row;
+  for (const k of Object.keys(row)) {
+    if (typeof row[k] === 'bigint') {
+      row[k] = Number(row[k]);
+    }
+  }
+  return row;
+}
+
 // Try better-sqlite3 first; fallback to node:sqlite (native in Node.js 22+)
 try {
   const BetterSqlite3 = require('better-sqlite3');
@@ -43,17 +63,23 @@ try {
       const stmt = rawDb.prepare(sql);
       return {
         run(...params) {
-          // Normalize flat array if single array passed
           const flatParams = (params.length === 1 && Array.isArray(params[0])) ? params[0] : params;
-          return stmt.run(...flatParams);
+          const res = stmt.run(...flatParams);
+          return {
+            changes: typeof res.changes === 'bigint' ? Number(res.changes) : res.changes,
+            lastInsertRowid: typeof res.lastInsertRowid === 'bigint' ? Number(res.lastInsertRowid) : res.lastInsertRowid
+          };
         },
         get(...params) {
           const flatParams = (params.length === 1 && Array.isArray(params[0])) ? params[0] : params;
-          return stmt.get(...flatParams);
+          const row = stmt.get(...flatParams);
+          return normalizeSqliteRow(row);
         },
         all(...params) {
           const flatParams = (params.length === 1 && Array.isArray(params[0])) ? params[0] : params;
-          return stmt.all(...flatParams);
+          const rows = stmt.all(...flatParams);
+          if (!Array.isArray(rows)) return rows;
+          return rows.map(normalizeSqliteRow);
         }
       };
     },
