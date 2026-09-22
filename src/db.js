@@ -305,22 +305,22 @@ function initDb() {
 }
 
 function getNextCertNo(courseId) {
-  const row = db.prepare(`
-    SELECT cert_no FROM certificates 
-    WHERE course_id = ? 
-    ORDER BY id DESC LIMIT 1
-  `).get(courseId);
-
-  if (!row || !row.cert_no) {
-    return '000001';
+  let certNo;
+  let exists = true;
+  let attempts = 0;
+  while (exists && attempts < 100) {
+    // 6 xonali tasodifiy raqam (100000 - 999999)
+    certNo = String(Math.floor(100000 + Math.random() * 900000));
+    if (courseId) {
+      const row = db.prepare('SELECT id FROM certificates WHERE course_id = ? AND cert_no = ?').get(courseId, certNo);
+      if (!row) exists = false;
+    } else {
+      const row = db.prepare('SELECT id FROM certificates WHERE cert_no = ?').get(certNo);
+      if (!row) exists = false;
+    }
+    attempts++;
   }
-
-  const num = parseInt(String(row.cert_no).replace(/\D/g, ''), 10);
-  if (isNaN(num)) {
-    return '000001';
-  }
-
-  return String(num + 1).padStart(6, '0');
+  return certNo || String(Math.floor(100000 + Math.random() * 900000));
 }
 
 function getNextRegNo() {

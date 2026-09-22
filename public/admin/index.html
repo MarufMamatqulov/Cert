@@ -1321,10 +1321,10 @@
           <div class="form-control-group" style="margin-bottom: 0;">
             <div style="display: flex; justify-content: space-between; align-items: center;">
               <label class="form-label" for="certNo" style="margin-bottom: 4px;">Sertifikat №: *</label>
-              <button type="button" onclick="refreshCertNextNumbers()" style="background: none; border: none; color: #2563eb; font-size: 11px; cursor: pointer; text-decoration: underline; padding: 0;">🔄 Yangilash</button>
+              <button type="button" onclick="generateNewCertNoForModal()" style="background: none; border: none; color: #2563eb; font-size: 11px; cursor: pointer; text-decoration: underline; padding: 0;">🎲 Tasodifiy raqam</button>
             </div>
             <div style="position: relative;">
-              <input type="text" id="certNo" class="form-input" placeholder="000001" style="font-family: monospace; font-weight: 600;" required>
+              <input type="text" id="certNo" class="form-input" placeholder="748291" style="font-family: monospace; font-weight: 600;" required>
               <span style="position: absolute; right: 8px; top: 50%; transform: translateY(-50%); font-size: 11px; background: #e2e8f0; padding: 2px 6px; border-radius: 4px; color: #475569; pointer-events: none;">Avto</span>
             </div>
           </div>
@@ -1963,6 +1963,12 @@
       const code = Math.floor(1000000000 + Math.random() * 9000000000).toString();
       const vInput = document.getElementById('certVerifyCode');
       if (vInput) vInput.value = code;
+    }
+
+    function generateNewCertNoForModal() {
+      const num = Math.floor(100000 + Math.random() * 900000).toString();
+      const noInput = document.getElementById('certNo');
+      if (noInput) noInput.value = num;
     }
 
     async function refreshCertNextNumbers(courseId = null) {
@@ -3123,7 +3129,7 @@
           html += `
             <div class="canvas-draggable-el ${isActive ? 'active' : ''}" 
                  data-key="${key}"
-                 style="left: ${cfg.x}%; top: ${cfg.y}%; transform: ${transform}; font-family: '${cfg.fontFamily || 'Plus Jakarta Sans'}', sans-serif; font-size: ${cfg.fontSize || 20}px; font-weight: ${cfg.fontWeight || 'bold'}; color: ${cfg.color || '#0f172a'}; text-align: ${align};">
+                 style="left: ${cfg.x}%; top: ${cfg.y}%; transform: ${transform}; font-family: '${cfg.fontFamily || 'Plus Jakarta Sans'}', sans-serif; font-size: ${cfg.fontSize || 20}px; font-weight: ${cfg.fontWeight || 'bold'}; color: ${cfg.color || '#0f172a'}; text-align: ${align}; ${cfg.width ? `width: ${cfg.width}%;` : 'white-space: nowrap;'}">
               <span class="canvas-el-tag">
                 ${cfg.label || key}
                 <span onclick="event.stopPropagation(); toggleElementVisibilityByKey('${key}', false)" title="Sertifikatdan olib tashlash" style="margin-left: 6px; cursor: pointer; color: #fca5a5; font-weight: bold; padding: 0 4px; border-radius: 3px; background: rgba(239, 68, 68, 0.3);">✕</span>

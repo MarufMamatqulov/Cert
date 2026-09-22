@@ -316,7 +316,7 @@ async function renderCustomHtml(customTpl, certData, baseUrl) {
       font-weight: ${itemCfg.fontWeight || 'bold'};
       color: ${itemCfg.color || '#0f172a'};
       text-align: ${align};
-      ${itemCfg.width ? `width: ${itemCfg.width}%;` : ''}
+      ${itemCfg.width ? `width: ${itemCfg.width}%;` : 'white-space: nowrap;'}
       ${itemCfg.letterSpacing ? `letter-spacing: ${itemCfg.letterSpacing}px;` : ''}
       ${itemCfg.lineHeight ? `line-height: ${itemCfg.lineHeight};` : ''}
       ${itemCfg.textTransform ? `text-transform: ${itemCfg.textTransform};` : ''}
@@ -343,7 +343,7 @@ async function renderCustomHtml(customTpl, certData, baseUrl) {
     `;
   }
 
-  const certNoText = `${certData.series || 'MO'} № ${certData.cert_no || '000001'}`;
+  const certNoText = `${certData.series || 'MO'} №\u00A0${certData.cert_no || '000001'}`;
   const regNoPrefix = (cfg.regNo && cfg.regNo.prefix !== undefined) ? cfg.regNo.prefix : '№ ';
   const regNoText = certData.reg_no ? `${regNoPrefix}${certData.reg_no}` : '';
   const hoursText = certData.hours ? `${certData.hours} soat` : '';
@@ -391,7 +391,7 @@ async function renderCustomHtml(customTpl, certData, baseUrl) {
     ${(cfg.fio && cfg.fio.visible !== false) ? `<div style="${getStyle(cfg.fio)}">${certData.fio || ''}</div>` : ''}
     ${(cfg.courseTitle && cfg.courseTitle.visible !== false && certData.title) ? `<div style="${getStyle(cfg.courseTitle)}">${certData.title || ''}</div>` : ''}
     ${(cfg.bodyText && cfg.bodyText.visible !== false) ? `<div style="${getStyle(cfg.bodyText)}">${bodyText}</div>` : ''}
-    ${(cfg.certNo && cfg.certNo.visible !== false) ? `<div style="${getStyle(cfg.certNo)}">${certNoText}</div>` : ''}
+    ${(cfg.certNo && cfg.certNo.visible !== false) ? `<div style="${getStyle(cfg.certNo)} white-space: nowrap !important; display: inline-block;">${certNoText}</div>` : ''}
     ${(cfg.issueDate && cfg.issueDate.visible !== false) ? `<div style="${getStyle(cfg.issueDate)}">${formattedDate}</div>` : ''}
     ${(cfg.regNo && cfg.regNo.visible !== false && certData.reg_no) ? `<div style="${getStyle(cfg.regNo)}">${regNoText}</div>` : ''}
     ${(cfg.hoursPeriod && cfg.hoursPeriod.visible !== false && hoursText) ? `<div style="${getStyle(cfg.hoursPeriod)}">${hoursText}</div>` : ''}
