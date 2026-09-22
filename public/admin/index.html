@@ -3222,17 +3222,22 @@
       });
     }
 
-    async function compressImageIfNeeded(file, maxDimension = 2500, quality = 0.92) {
-      if (!file || file.size <= 2 * 1024 * 1024) {
+    async function compressImageIfNeeded(file, maxDimension = 2000, quality = 0.86) {
+      if (!file) return file;
+      
+      // If already small (< 800KB), upload as is
+      if (file.size <= 800 * 1024) {
         return file;
       }
+
       return new Promise((resolve) => {
         const img = new Image();
         const reader = new FileReader();
         reader.onload = (e) => {
           img.onload = () => {
-            let width = img.width;
-            let height = img.height;
+            let width = img.naturalWidth || img.width;
+            let height = img.naturalHeight || img.height;
+
             if (width > maxDimension || height > maxDimension) {
               if (width > height) {
                 height = Math.round((height * maxDimension) / width);
@@ -3242,20 +3247,27 @@
                 height = maxDimension;
               }
             }
+
             const canvas = document.createElement('canvas');
             canvas.width = width;
             canvas.height = height;
             const ctx = canvas.getContext('2d');
+
+            // Fill canvas with white background (handles transparent PNGs cleanly)
+            ctx.fillStyle = '#ffffff';
+            ctx.fillRect(0, 0, width, height);
             ctx.drawImage(img, 0, 0, width, height);
 
-            const mime = file.type === 'image/png' ? 'image/png' : 'image/jpeg';
+            // Compress to JPEG for 10-20x faster uploads (from 15MB down to ~400KB)
             canvas.toBlob((blob) => {
               if (blob && blob.size < file.size) {
-                resolve(new File([blob], file.name, { type: mime }));
+                const baseName = (file.name || 'blanka').replace(/\.[^/.]+$/, "");
+                const optimizedFile = new File([blob], `${baseName}.jpg`, { type: 'image/jpeg' });
+                resolve(optimizedFile);
               } else {
                 resolve(file);
               }
-            }, mime, quality);
+            }, 'image/jpeg', quality);
           };
           img.onerror = () => resolve(file);
           img.src = e.target.result;
@@ -3276,7 +3288,7 @@
         return;
       }
 
-      if (!currentDesignerTplId && !fileInput.files[0]) {
+      if (!currentDesignerTplId && !fileInput.files[0] && !designerExistingBg) {
         showToast('Iltimos, blanka fon rasmini (.png yoki .jpg) yuklang.', 'error');
         return;
       }
@@ -3292,10 +3304,13 @@
         fd.append('name', name);
         fd.append('orientation', orientation);
         fd.append('elements_config', JSON.stringify(designerElementsConfig));
+        if (designerExistingBg) {
+          fd.append('existing_bg', designerExistingBg);
+        }
 
         if (fileInput.files[0]) {
           const optimizedFile = await compressImageIfNeeded(fileInput.files[0]);
-          fd.append('bg_image', optimizedFile, fileInput.files[0].name);
+          fd.append('bg_image', optimizedFile, optimizedFile.name || fileInput.files[0].name);
         }
 
         const url = currentDesignerTplId 
@@ -3304,7 +3319,7 @@
         const method = currentDesignerTplId ? 'PUT' : 'POST';
 
         const controller = new AbortController();
-        const timeoutId = setTimeout(() => controller.abort(), 30000);
+        const timeoutId = setTimeout(() => controller.abort(), 60000);
 
         const res = await fetch(url, {
           method,
@@ -3312,6 +3327,12 @@
           signal: controller.signal
         });
         clearTimeout(timeoutId);
+
+        if (res.status === 401) {
+          showToast('Sessiya muddati tugagan. Iltimos, qayta kiring.', 'error');
+          setTimeout(() => { window.location.href = '/admin/login'; }, 1500);
+          return;
+        }
 
         let data = {};
         try {
@@ -3357,11 +3378,11 @@
         }
         if (fileInput.files[0]) {
           const optimizedFile = await compressImageIfNeeded(fileInput.files[0]);
-          fd.append('bg_image', optimizedFile, fileInput.files[0].name);
+          fd.append('bg_image', optimizedFile, optimizedFile.name || fileInput.files[0].name);
         }
 
         const controller = new AbortController();
-        const timeoutId = setTimeout(() => controller.abort(), 30000);
+        const timeoutId = setTimeout(() => controller.abort(), 60000);
 
         const res = await fetch('/admin/api/custom-templates/preview-pdf', {
           method: 'POST',
@@ -3369,6 +3390,11 @@
           signal: controller.signal
         });
         clearTimeout(timeoutId);
+
+        if (res.status === 401) {
+          showToast('Sessiya muddati tugagan. Qayta kiring.', 'error');
+          return;
+        }
 
         if (!res.ok) {
           let errText = '';

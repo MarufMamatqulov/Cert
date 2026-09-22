@@ -819,7 +819,8 @@ app.get('/admin/api/custom-templates/:id', needAuth, (req, res) => {
 
 // Create new custom template with background image upload
 app.post('/admin/api/custom-templates', needAuth, upload.single('bg_image'), (req, res) => {
-  if (!req.file) {
+  let bg_image = req.file ? path.basename(req.file.path) : (req.body.existing_bg || '');
+  if (!bg_image) {
     return res.status(400).json({ error: 'Blanka fon rasmi (.png yoki .jpg) yuklanishi shart.' });
   }
 
@@ -827,8 +828,6 @@ app.post('/admin/api/custom-templates', needAuth, upload.single('bg_image'), (re
   if (!name || !name.trim()) {
     return res.status(400).json({ error: 'Shablon nomi kiritilishi shart.' });
   }
-
-  const bg_image = path.basename(req.file.path);
   let finalConfig = '{}';
 
   if (typeof elements_config === 'string') {
