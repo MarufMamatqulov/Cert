@@ -1917,7 +1917,7 @@
             <td><span class="status-tag ${c.status}">${c.status === 'active' ? 'Faol' : 'Bekor qilingan'}</span></td>
             <td>
               <div style="display: flex; gap: 6px;">
-                <a href="/admin/api/certificates/${c.id}/pdf" target="_blank" class="btn btn-secondary btn-sm" title="PDF ko‘rish">
+                <a href="/admin/api/certificates/${c.uid}/pdf" target="_blank" class="btn btn-secondary btn-sm" title="PDF ko‘rish">
                   PDF
                 </a>
                 <button class="btn btn-secondary btn-sm" onclick="editCert(${JSON.stringify(c).replace(/"/g, '&quot;')})">

@@ -1153,10 +1153,37 @@ app.delete('/admin/api/certificates/:id', needAuth, (req, res) => {
   }
 });
 
-// Admin PDF preview by certificate ID (allows query ?tpl=... for testing other designs)
-app.get('/admin/api/certificates/:id/pdf', needAuth, async (req, res) => {
-  const { id } = req.params;
+// Admin PDF preview by certificate UID (secure random token, blocks sequential numeric IDs)
+app.get('/admin/api/certificates/:uid/pdf', needAuth, async (req, res) => {
+  const { uid } = req.params;
   const { tpl } = req.query;
+
+  // Xavfsizlik: ketma-ket raqamli ID (1, 2, 3...) orqali boshqa sertifikatlarni ko'rish taqiqlanadi
+  if (/^\d{1,6}$/.test(uid)) {
+    return res.status(403).send(`
+      <!DOCTYPE html>
+      <html lang="uz">
+      <head>
+        <meta charset="UTF-8">
+        <title>Kirish taqiqlangan</title>
+        <style>
+          body { font-family: sans-serif; display: flex; align-items: center; justify-content: center; height: 100vh; margin: 0; background: #fef2f2; color: #991b1b; }
+          .card { background: white; padding: 32px; border-radius: 12px; box-shadow: 0 4px 20px rgba(0,0,0,0.08); text-align: center; max-width: 480px; border-top: 5px solid #ef4444; }
+          h2 { color: #dc2626; margin-bottom: 12px; }
+          p { color: #475569; margin-bottom: 24px; line-height: 1.5; font-size: 14px; }
+          a { display: inline-block; background: #1e3a8a; color: white; padding: 10px 20px; border-radius: 6px; text-decoration: none; font-weight: bold; }
+        </style>
+      </head>
+      <body>
+        <div class="card">
+          <h2>⛔ Kirish taqiqlangan (403 Forbidden)</h2>
+          <p>Xavfsizlik talablariga muvofiq, sertifikatlarga ketma-ket raqamli ID (masalan: /1/pdf, /2/pdf) orqali kirish taqiqlangan. Faqat xavfsiz tasodifiy UID tokeni orqali kirish mumkin.</p>
+          <a href="/admin">Admin panelga qaytish</a>
+        </div>
+      </body>
+      </html>
+    `);
+  }
 
   try {
     const cert = db.prepare(`
@@ -1165,8 +1192,8 @@ app.get('/admin/api/certificates/:id/pdf', needAuth, async (req, res) => {
              k.accent, k.template as course_template
       FROM certificates c
       JOIN courses k ON c.course_id = k.id
-      WHERE c.id = ?
-    `).get(id);
+      WHERE c.uid = ?
+    `).get(uid);
 
     if (!cert) {
       return res.status(404).send('Sertifikat topilmadi');
@@ -1180,7 +1207,7 @@ app.get('/admin/api/certificates/:id/pdf', needAuth, async (req, res) => {
     const pdfBuffer = await generatePdf(html, isLandscape);
 
     res.setHeader('Content-Type', 'application/pdf');
-    res.setHeader('Content-Disposition', `inline; filename="preview_${cert.series}_${cert.cert_no}.pdf"`);
+    res.setHeader('Content-Disposition', `inline; filename="sertifikat_${cert.series}_${cert.cert_no}.pdf"`);
     res.send(pdfBuffer);
   } catch (err) {
     res.status(500).send('PDF xatosi: ' + err.message);
