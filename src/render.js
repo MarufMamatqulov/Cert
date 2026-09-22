@@ -32,6 +32,48 @@ function formatUzDate(dateInput) {
 }
 
 /**
+ * Format date into DD.MM.YYYY format (e.g. 12.01.2026)
+ */
+function formatDotDate(dateInput) {
+  if (!dateInput) return '';
+  const str = String(dateInput).trim();
+  const m = str.match(/^(\d{4})-(\d{1,2})-(\d{1,2})/);
+  if (m) {
+    const day = m[3].padStart(2, '0');
+    const month = m[2].padStart(2, '0');
+    const year = m[1];
+    return `${day}.${month}.${year}`;
+  }
+  const d = new Date(dateInput);
+  if (!isNaN(d.getTime())) {
+    const day = String(d.getDate()).padStart(2, '0');
+    const month = String(d.getMonth() + 1).padStart(2, '0');
+    const year = d.getFullYear();
+    return `${day}.${month}.${year}`;
+  }
+  return str;
+}
+
+/**
+ * Get code line to display under QR code
+ */
+function getQrCodeLine(certData, codeType = 'cert_no') {
+  const seriesNo = `${certData.series ? certData.series + ' ' : ''}${certData.cert_no || ''}`.trim();
+  const vCode = certData.verify_code ? String(certData.verify_code) : '';
+
+  if (codeType === 'none') return '';
+  if (codeType === 'verify_code') return vCode ? `Kod: ${vCode}` : seriesNo;
+  if (codeType === 'both') {
+    if (seriesNo && vCode) {
+      return `${seriesNo}<br><span style="font-weight: 600; font-size: 0.9em;">Kod: ${vCode}</span>`;
+    }
+    return seriesNo || vCode;
+  }
+  // Default: cert_no (e.g. 5MP 0223485 or MO 000001)
+  return seriesNo || (vCode ? `Kod: ${vCode}` : 'MO 000001');
+}
+
+/**
  * Detects Chromium executable on the system
  */
 function findChromiumExecutable() {
@@ -223,17 +265,18 @@ async function renderCustomHtml(customTpl, certData, baseUrl) {
   const isLandscape = customTpl.orientation !== 'portrait';
 
   // Find background image
-  let bgPath = path.join(UPLOADS_DIR, customTpl.bg_image);
-  if (!fs.existsSync(bgPath)) {
-    bgPath = path.join(__dirname, '..', 'public', customTpl.bg_image);
-  }
-
   let bgDataUrl = '';
-  if (fs.existsSync(bgPath)) {
-    const ext = path.extname(bgPath).toLowerCase();
-    const mime = ext === '.png' ? 'image/png' : (ext === '.svg' ? 'image/svg+xml' : 'image/jpeg');
-    const base64 = fs.readFileSync(bgPath).toString('base64');
-    bgDataUrl = `data:${mime};base64,${base64}`;
+  if (customTpl.bg_image) {
+    let bgPath = path.join(UPLOADS_DIR, customTpl.bg_image);
+    if (!fs.existsSync(bgPath)) {
+      bgPath = path.join(__dirname, '..', 'public', customTpl.bg_image);
+    }
+    if (fs.existsSync(bgPath)) {
+      const ext = path.extname(bgPath).toLowerCase();
+      const mime = ext === '.png' ? 'image/png' : (ext === '.svg' ? 'image/svg+xml' : 'image/jpeg');
+      const base64 = fs.readFileSync(bgPath).toString('base64');
+      bgDataUrl = `data:${mime};base64,${base64}`;
+    }
   }
 
   // QR Code
@@ -284,17 +327,19 @@ async function renderCustomHtml(customTpl, certData, baseUrl) {
 
   function getQrStyle(qrCfg) {
     if (!qrCfg) return 'display: none;';
-    const size = qrCfg.size || 100;
+    const size = qrCfg.size || 90;
     return `
       position: absolute;
       left: ${qrCfg.x}%;
       top: ${qrCfg.y}%;
       transform: translate(-50%, -50%);
       width: ${size}px;
-      height: ${size}px;
       z-index: 10;
-      display: ${qrCfg.visible !== false ? 'block' : 'none'};
-      ${qrCfg.bg ? `background: ${qrCfg.bg}; padding: 4px; border-radius: 6px;` : ''}
+      display: ${qrCfg.visible !== false ? 'flex' : 'none'};
+      flex-direction: column;
+      align-items: center;
+      text-align: center;
+      ${qrCfg.bg ? `background: white; padding: 6px; border-radius: 6px; box-shadow: 0 2px 8px rgba(0,0,0,0.1);` : ''}
     `;
   }
 
@@ -353,7 +398,27 @@ async function renderCustomHtml(customTpl, certData, baseUrl) {
     ${(cfg.score && cfg.score.visible !== false && certData.score != null && certData.score !== '') ? `<div style="${getStyle(cfg.score)}">${certData.score} ball</div>` : ''}
     ${(cfg.director && cfg.director.visible !== false && certData.director) ? `<div style="${getStyle(cfg.director)}">${certData.director || ''}</div>` : ''}
     ${(cfg.verifyCode && cfg.verifyCode.visible !== false && certData.verify_code) ? `<div style="${getStyle(cfg.verifyCode)}">Kod: ${certData.verify_code}</div>` : ''}
-    ${(cfg.qr && cfg.qr.visible !== false) ? `<div style="${getQrStyle(cfg.qr)}"><img src="${qrDataUrl}" style="width: 100%; height: 100%; display: block;" alt="QR Code" /></div>` : ''}
+    ${(cfg.qr && cfg.qr.visible !== false) ? (() => {
+      const qrSize = cfg.qr.size || 90;
+      const codeType = cfg.qr.codeType || 'cert_no';
+      const codeLine = getQrCodeLine(certData, codeType);
+      const dotDate = formatDotDate(certData.issue_date || new Date());
+      const showMeta = codeType !== 'none';
+      const fontSize = cfg.qr.fontSize || 11;
+      const textColor = cfg.qr.color || cfg.qr.textColor || '#0f172a';
+
+      return `
+        <div style="${getQrStyle(cfg.qr)}">
+          <img src="${qrDataUrl}" style="width: ${qrSize}px; height: ${qrSize}px; display: block;" alt="QR Code" />
+          ${showMeta ? `
+            <div style="margin-top: 5px; font-family: 'Plus Jakarta Sans', Arial, sans-serif; text-align: center; color: ${textColor}; line-height: 1.3; width: 100%;">
+              <div style="font-size: ${fontSize}px; font-weight: 700; letter-spacing: 0.5px;">${codeLine}</div>
+              <div style="font-size: ${Math.max(8, fontSize - 1)}px; font-weight: 500; letter-spacing: 0.3px; margin-top: 1px;">${dotDate}</div>
+            </div>
+          ` : ''}
+        </div>
+      `;
+    })() : ''}
   </div>
 </body>
 </html>
@@ -418,6 +483,9 @@ async function renderHtml(templateName, certData, baseUrl) {
 
   const accentColor = certData.accent || '#1a56db';
 
+  const qrCodeLine = `${certData.series ? certData.series + ' ' : ''}${certData.cert_no || ''}`.trim() || (certData.verify_code ? `Kod: ${certData.verify_code}` : 'MO 000001');
+  const qrDateLine = formatDotDate(certData.issue_date || new Date());
+
   // Replacements dictionary
   const replacements = {
     '{{ORG1}}': (certData.org_line1 || '').toUpperCase(),
@@ -432,6 +500,8 @@ async function renderHtml(templateName, certData, baseUrl) {
     '{{REG_NO}}': certData.reg_no || '1001',
     '{{DATE}}': formattedDate,
     '{{QR}}': qrDataUrl,
+    '{{QR_CODE_LINE}}': qrCodeLine,
+    '{{QR_DATE_LINE}}': qrDateLine,
     '{{LOGO_BLOCK}}': logoBlock,
     '{{ACCENT}}': accentColor,
     '{{UID}}': certData.uid || '',

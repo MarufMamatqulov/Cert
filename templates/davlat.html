@@ -298,8 +298,14 @@
       <!-- Footer with QR and Signatures -->
       <div class="cert-footer">
         <div class="footer-left">
-          <img src="{{QR}}" class="qr-img" alt="QR Kod">
-          <div class="verify-note">
+          <div style="display: flex; flex-direction: column; align-items: center; text-align: center;">
+            <img src="{{QR}}" class="qr-img" alt="QR Kod">
+            <div style="margin-top: 2mm; font-family: 'Plus Jakarta Sans', Arial, sans-serif; text-align: center; line-height: 1.25;">
+              <div style="font-size: 8.5pt; font-weight: 800; color: #111827; letter-spacing: 0.5px;">{{QR_CODE_LINE}}</div>
+              <div style="font-size: 8pt; font-weight: 600; color: #374151; letter-spacing: 0.3px; margin-top: 0.5mm;">{{QR_DATE_LINE}}</div>
+            </div>
+          </div>
+          <div class="verify-note" style="margin-left: 10px;">
             Haqiqiyligini tekshirish uchun QR kodni skanerlang.<br>
             <strong>Kod: {{VERIFY_CODE}}</strong>
           </div>

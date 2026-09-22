@@ -280,10 +280,16 @@
 
     <div class="card-footer">
       <div class="footer-left-info">
-        <img src="{{QR}}" class="qr-box" alt="QR Kod">
-        <div class="verification-label">
+        <div style="display: flex; flex-direction: column; align-items: center; text-align: center;">
+          <img src="{{QR}}" class="qr-box" alt="QR Kod">
+          <div style="margin-top: 2mm; font-family: 'Plus Jakarta Sans', Arial, sans-serif; text-align: center; line-height: 1.25;">
+            <div style="font-size: 8.5pt; font-weight: 800; color: #111827; letter-spacing: 0.5px;">{{QR_CODE_LINE}}</div>
+            <div style="font-size: 8pt; font-weight: 600; color: #374151; letter-spacing: 0.3px; margin-top: 0.5mm;">{{QR_DATE_LINE}}</div>
+          </div>
+        </div>
+        <div class="verification-label" style="margin-left: 10px;">
           Haqiqiylikni onlayn tekshirish<br>
-          Tekshiruv kodi: <strong>{{VERIFY_CODE}}</strong>
+          Tekshiruv kodi: <strong>Kod: {{VERIFY_CODE}}</strong>
         </div>
       </div>
 

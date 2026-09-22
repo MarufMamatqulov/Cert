@@ -1631,6 +1631,26 @@
                   <input type="checkbox" id="elQrBg" onchange="updateActiveElementFromInputs()"> Oq hoshiyali fon qo‘shish
                 </label>
               </div>
+              <div class="form-control-group" style="margin-top: 10px;">
+                <label class="form-label" style="font-size: 12.5px; font-weight: 600;">QR ostidagi rekvizitlar (Kod va Sana):</label>
+                <select id="elQrCodeType" class="form-select" onchange="updateActiveElementFromInputs()" style="font-size: 13px; padding: 7px 10px;">
+                  <option value="cert_no">Seriya va raqam (masalan: 5MP 0223485)</option>
+                  <option value="verify_code">10 xonali tekshirish kodi (masalan: 8492019483)</option>
+                  <option value="both">Ikkalasi ham (Seriya raqam + Kod)</option>
+                  <option value="none">Matnsiz (faqat QR-kod)</option>
+                </select>
+              </div>
+              <div class="form-control-group">
+                <label class="form-label" style="font-size: 12.5px; font-weight: 600;">Yozuv shrift o‘lchami (<span id="elQrFontSizeVal">11</span>px):</label>
+                <input type="range" id="elQrFontSize" min="8" max="22" value="11" class="form-range" oninput="updateActiveElementFromInputs()">
+              </div>
+              <div class="form-control-group">
+                <label class="form-label" style="font-size: 12.5px; font-weight: 600;">Yozuv rangi:</label>
+                <div style="display: flex; align-items: center; gap: 8px;">
+                  <input type="color" id="elQrColor" value="#0f172a" class="form-input-color" oninput="updateActiveElementFromInputs()">
+                  <span id="elQrColorVal" style="font-family: monospace; font-size: 12px; color: #475569;">#0f172a</span>
+                </div>
+              </div>
             </div>
 
             <!-- Position sliders -->
@@ -2511,12 +2531,17 @@
         sample: 'ALISHER NAVOIY G‘IYOSIDDIN O‘G‘LI'
       },
       qr: {
-        label: 'QR-kod',
+        label: 'QR-kod va rekvizitlar',
         x: 12,
         y: 82,
         size: 90,
         visible: true,
-        bg: false
+        bg: false,
+        codeType: 'cert_no',
+        fontSize: 11,
+        color: '#0f172a',
+        sampleCode: '5MP 0223485',
+        sampleDate: '12.01.2026'
       },
       certNo: {
         label: 'Seriya va Raqam',
@@ -2949,6 +2974,11 @@
         document.getElementById('elQrSize').value = cfg.size || 90;
         document.getElementById('elQrSizeVal').textContent = cfg.size || 90;
         document.getElementById('elQrBg').checked = Boolean(cfg.bg);
+        document.getElementById('elQrCodeType').value = cfg.codeType || 'cert_no';
+        document.getElementById('elQrFontSize').value = cfg.fontSize || 11;
+        document.getElementById('elQrFontSizeVal').textContent = cfg.fontSize || 11;
+        document.getElementById('elQrColor').value = cfg.color || '#0f172a';
+        document.getElementById('elQrColorVal').textContent = cfg.color || '#0f172a';
       } else {
         document.getElementById('textSettingsGroup').style.display = 'block';
         document.getElementById('qrSettingsGroup').style.display = 'none';
@@ -3017,6 +3047,11 @@
         cfg.size = parseInt(document.getElementById('elQrSize').value, 10) || 90;
         document.getElementById('elQrSizeVal').textContent = cfg.size;
         cfg.bg = document.getElementById('elQrBg').checked;
+        cfg.codeType = document.getElementById('elQrCodeType').value || 'cert_no';
+        cfg.fontSize = parseInt(document.getElementById('elQrFontSize').value, 10) || 11;
+        document.getElementById('elQrFontSizeVal').textContent = cfg.fontSize;
+        cfg.color = document.getElementById('elQrColor').value || '#0f172a';
+        document.getElementById('elQrColorVal').textContent = cfg.color;
       } else {
         cfg.fontFamily = document.getElementById('elFontFamily').value;
         cfg.fontSize = parseInt(document.getElementById('elFontSize').value, 10) || 20;
@@ -3055,15 +3090,34 @@
 
         if (key === 'qr') {
           const qrSize = cfg.size || 90;
+          const codeType = cfg.codeType || 'cert_no';
+          let codeSample = '';
+          if (codeType === 'cert_no') {
+            codeSample = cfg.sampleCode || '5MP 0223485';
+          } else if (codeType === 'verify_code') {
+            codeSample = 'Kod: 8492019483';
+          } else if (codeType === 'both') {
+            codeSample = (cfg.sampleCode || '5MP 0223485') + '<br>Kod: 8492019483';
+          }
+          const dateSample = cfg.sampleDate || '12.01.2026';
+          const fontSize = cfg.fontSize || 11;
+          const fontColor = cfg.color || '#0f172a';
+
           html += `
             <div class="canvas-draggable-el ${isActive ? 'active' : ''}" 
                  data-key="${key}"
-                 style="left: ${cfg.x}%; top: ${cfg.y}%; transform: translate(-50%, -50%); width: ${qrSize}px; height: ${qrSize}px; padding: 2px; ${cfg.bg ? 'background: white; border-radius: 6px;' : ''}">
+                 style="left: ${cfg.x}%; top: ${cfg.y}%; transform: translate(-50%, -50%); width: ${qrSize}px; padding: 4px; ${cfg.bg ? 'background: white; border-radius: 6px; box-shadow: 0 2px 8px rgba(0,0,0,0.1);' : ''} display: flex; flex-direction: column; align-items: center; text-align: center;">
               <span class="canvas-el-tag">
                 ${cfg.label || 'QR'}
                 <span onclick="event.stopPropagation(); toggleElementVisibilityByKey('${key}', false)" title="Sertifikatdan olib tashlash" style="margin-left: 6px; cursor: pointer; color: #fca5a5; font-weight: bold; padding: 0 4px; border-radius: 3px; background: rgba(239, 68, 68, 0.3);">✕</span>
               </span>
-              <img src="${sampleQrSvg}" style="width: 100%; height: 100%; pointer-events: none; display: block;" alt="QR" />
+              <img src="${sampleQrSvg}" style="width: ${qrSize}px; height: ${qrSize}px; pointer-events: none; display: block;" alt="QR" />
+              ${codeType !== 'none' ? `
+                <div style="margin-top: 5px; font-family: 'Plus Jakarta Sans', Arial, sans-serif; text-align: center; color: ${fontColor}; pointer-events: none; line-height: 1.3; width: 100%;">
+                  <div style="font-size: ${fontSize}px; font-weight: 700; letter-spacing: 0.5px;">${codeSample}</div>
+                  <div style="font-size: ${Math.max(8, fontSize - 1)}px; font-weight: 500; letter-spacing: 0.3px; margin-top: 1px;">${dateSample}</div>
+                </div>
+              ` : ''}
             </div>
           `;
         } else {
